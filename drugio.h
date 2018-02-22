@@ -86,17 +86,15 @@ typedef struct PRT_DRUG_INT
 
 /* Functions prototypes */
 extern drug* newDrug( char*, int*, short);
-extern int printd(drug* arrPtr[]);
+extern void drugioDestructor(drug* arrPtr[]);
+extern void printd(drug* arrPtr[]);
 extern void drugioSetPath(char*);
-static void drugioDestructor(drug* arrPtr[]);
-static int makeSelection(char*);
-static diPtr drugioMenu(drug* ptr[]);
-static char* formatedDate(short);
-static short runAgain(void);
-static void showLogs(char**);
 
 
 /* Global constant */
-const char* drugioFilePath;
+#ifndef DRUGIO_FILE_PATH
+#define DRUGIO_FILE_PATH
+static char* drugioFilePath;
+#endif
 
 #endif
