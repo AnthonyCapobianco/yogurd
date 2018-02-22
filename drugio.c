@@ -25,7 +25,8 @@
 #include "drugio.h"
 
 /* Struct constructor for type drug pointer */
-extern drug* newDrug(char* dName, int* dDoses, short isNG)
+extern drug* 
+newDrug(char* dName, int* dDoses, short isNG)
 {
     drug* p = malloc(sizeof(drug));
     
@@ -37,13 +38,15 @@ extern drug* newDrug(char* dName, int* dDoses, short isNG)
 }
 
 /* Struct destructor for drugs */
-static void drugioDestructor(drug* arrPtr[])
+static void 
+drugioDestructor(drug* arrPtr[])
 {
     for (int i = 0; arrPtr[i] != NULL; i++) free(*(arrPtr + i));
 }
 
 /* Make Selection (read user input) */
-int makeSelection(char* lastObj)
+static int 
+makeSelection(char* lastObj)
 {
     char c[20];
 
@@ -83,7 +86,8 @@ int makeSelection(char* lastObj)
 }
 
 /* Print drugs */
-static diPtr drugioMenu(drug* ptr[])
+static diPtr 
+drugioMenu(drug* ptr[])
 {
     char ident;
     int i;
@@ -101,7 +105,7 @@ DRUGIO_MENU:
         /* Print drug names */
         for (ident = 'a', i = 0; ptr[i] != NULL; ++i, ++ident) printf("[%c] %s\n", ident, ptr[i]->name);
 
-        d = (int) (makeSelection(&ident));
+        d = makeSelection(&ident);
         
         /* Check d */
         if (d < 0) break;
@@ -121,11 +125,12 @@ DRUGIO_MENU:
             /* Print the drug doses */
             for (ident = 'a', i = 0; idedDrug->doses[i] != 0 ; ++i, ++ident)
             {
-                if (idedDrug->isNanoGram) printf("[%c] %2g mg\n", ident, (float) (idedDrug->doses[i] / 1000.0));
+                if (idedDrug->isNanoGram) 
+                    printf("[%c] %2g mg\n", ident, (idedDrug->doses[i] / 1000.0));
                 else printf("[%c] %d mg\n", ident, idedDrug->doses[i]);
             }
 
-            d = (int) (makeSelection(&ident));
+            d = makeSelection(&ident);
             
             /* Check d */
             if (d < 0) break;
@@ -145,7 +150,8 @@ DRUGIO_MENU:
 }
 
 /* Date parsing and formating */
-char* formatedDate(short isFullFormat)
+static char* 
+formatedDate(short isFullFormat)
 {
     size_t strftime(char *, size_t, const char *, const struct tm *);
 
@@ -174,7 +180,8 @@ char* formatedDate(short isFullFormat)
 }
 
 /* Ask to run again */
-short runAgain()
+static short 
+runAgain()
 {
     char c[4];
 
@@ -192,13 +199,15 @@ short runAgain()
 }
 
 /* Set path of file to log to */
-void drugioSetPath(char* s)
+extern void 
+drugioSetPath(char* s)
 {
     drugioFilePath = s;
 }
 
 /* Show yesterday's log */
-static void showLogs(char** fpString)
+static void 
+showLogs(char** fpString)
 {
     FILE* f = fopen(*fpString, "r");
     int c;
@@ -211,7 +220,7 @@ static void showLogs(char** fpString)
         printf("—————————————————————————————————————————————\n"
                "|%*s%*c\n"
                "—————————————————————————————————————————————\n", 
-                24, (char *) (formatedDate(2)), 20, '|'
+                24, (formatedDate(2)), 20, '|'
               );
         
         fseek(f, 0, SEEK_SET);
@@ -227,12 +236,13 @@ static void showLogs(char** fpString)
 }
 
 /* Print the end result */
-int printd(drug* arrPtr[])
+extern int 
+printd(drug* arrPtr[])
 {
-    char* theDate = (char *) (formatedDate(1));
-    char* theFileDate = (char*) (formatedDate(0));
+    char* theDate = formatedDate(1);
+    char* theFileDate = formatedDate(0);
     
-    char* buffer = (char*) malloc((strlen(theFileDate) + strlen(drugioFilePath) + sizeof(char)));
+    char* buffer = malloc((strlen(theFileDate) + strlen(drugioFilePath) + 1));
     strcpy(buffer, drugioFilePath); strcat(buffer, theFileDate);
 
     FILE *ftoday; ftoday = fopen(buffer, "a+");
@@ -248,7 +258,8 @@ int printd(drug* arrPtr[])
             drug* p = dip.dPtr; 
             int d = dip.iPtr;
 
-            if (p->isNanoGram) fprintf(DRUGIO_USE_FILE,"[%s] %s %2g mg\n", theDate, p->name, ((float) p->doses[d] / 1000));
+            if (p->isNanoGram) 
+                fprintf(DRUGIO_USE_FILE,"[%s] %s %2g mg\n", theDate, p->name, (p->doses[d] / 1000.0));
             else fprintf(DRUGIO_USE_FILE,"[%s] %s %d mg\n", theDate, p->name, p->doses[d]);
         }
     } while (runAgain());

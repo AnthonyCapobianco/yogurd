@@ -1,4 +1,4 @@
-#yogurd 1.0.2 (Beta)
+# yogurd 1.0.3 (Beta)
 
 
 yogurd is currently in beta. 
