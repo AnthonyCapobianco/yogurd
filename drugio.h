@@ -81,68 +81,21 @@ typedef struct DRUG
 typedef struct PRT_DRUG_INT
 {    int iPtr;
      drug* dPtr;
+     short promise;
 } diPtr;
 
-
-/* Date struct */
-/* TODO: */
-/*
-typedef struct DRUGIO_DATE
-{   int min, h, d, m, y;
-} dDate;
-*/
-
 /* Functions prototypes */
+extern drug* newDrug( char*, int*, short);
+static void drugioDestructor(drug* arrPtr[]);
+int makeSelection(char*);
+static diPtr drugioMenu(drug* ptr[]);
+char* formatedDate(short);
+short runAgain(void);
+static void showLogs(char**);
+int printd(drug* arrPtr[]);
+void drugioSetPath(char*);
 
-/* Constructor for the drug type */
-extern drug* 
-newDrug( char*, int*, short);  
-
-/* Destructor for the drug type */
-static void 
-drugioDestructor(drug* arrPtr[]); 
-
-/* Parse user input (fgets) */
-int 
-makeSelection(char*); 
-
-/* Return a diPtr struct containing a pointer to a drug and an int 
- * correspoding to the index of the dose in the int array of that drug struct 
- */
-static diPtr 
-drugioMenu(drug* ptr[]); 
-
-/* Return a formated date in the form of a string */
-/* It takes an argument for the switch 
- * 0: Full date and time; 
- * 1: Just date; 
- * 2: Just time 
- */
-char* 
-formatedDate(short);
-
-/* Ask user if they want to run again. If so return 1; else 0 */
-short 
-runAgain(void);
-
-/* Prints the log for the day if it exists */
-void 
-showLogs(char**);
-
-/* Program loop. It takes the array of pointer to the drugs and 
- * calls all the necessary functions to get the diPtr 
- */
-void 
-printd(drug* arrPtr[]);
-
-/* Sets the global constant for the path */
-void 
-drugioSetPath(char*);
-/* TODO Function */
-/* dDate newDate(short); */
-
-/* Global constant for the path */
-const char* 
-drugioFilePath;
+/* Global constant */
+const char* drugioFilePath;
 
 #endif

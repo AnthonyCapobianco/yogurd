@@ -19,8 +19,7 @@
  */
 #include "drugio.h"
 
-int 
-main(void)
+int main(void)
 {    
     
     drugList( newDrug("Ritalin", mg(5, 10, 15, 20))
@@ -32,7 +31,6 @@ main(void)
             );
     
     drugioSetPath("./logs/"); 
-    printd(drugList);
 
-    return(0);
+    return((int) printd(drugList));
 }
