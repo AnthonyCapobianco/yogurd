@@ -30,8 +30,7 @@ int main(void)
             , newDrug("Zolpidem", mg(5, 10, 15))
             );
     
-    drugioSetPath("./logs/"); 
-    printd(drugList);
+    printd(drugList, "./logs/");
     
     drugioDestructor(drugList);
     

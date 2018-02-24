@@ -59,42 +59,30 @@
 #endif
 
 #ifndef drugList
-#define drugList(...) drug* drugList[] = {__VA_ARGS__, NULL}
+#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}
 #else
     #ifndef drugio_drugList
-        #define drugio_drugList(...) drug* drugList[] = {__VA_ARGS__, NULL}
+        #define drugio_drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}
     #endif
 #endif
 
-#ifndef DRUGIO_USE_FILE
-#define DRUGIO_USE_FILE (DRUGIO_DEBUG) ? stdout : ftoday
-#endif
-
-/* Type drug of type struct */
-typedef struct DRUG
+/* Type Drug of type struct */
+typedef struct _Drug
 {   char* name;
     int* doses;
     short isNanoGram;
-} drug;
+} Drug;
 
-/* Type diPtr of type struct */
-typedef struct PRT_DRUG_INT
+/* Type DrugAndDoseToPrint of type struct */
+typedef struct _DrugAndDoseToPrint
 {    int iPtr;
-     drug* dPtr;
+     Drug* dPtr;
      short promise;
-} diPtr;
+} DrugAndDoseToPrint;
 
 /* Functions prototypes */
-extern drug* newDrug( char*, int*, short);
-extern void drugioDestructor(drug* arrPtr[]);
-extern void printd(drug* arrPtr[]);
-extern void drugioSetPath(char*);
-
-
-/* Global constant */
-#ifndef DRUGIO_FILE_PATH
-#define DRUGIO_FILE_PATH
-static char* drugioFilePath;
-#endif
+extern Drug* newDrug( char* drugName, int* drugDoses, short isNanoGram);
+extern void drugioDestructor(Drug* drugList[]);
+extern void printd(Drug* drugList[], char* drugioLogFolderPath);
 
 #endif

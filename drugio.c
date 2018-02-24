@@ -24,11 +24,11 @@
 #include <time.h>
 #include "drugio.h"
 
-/* Struct constructor for type drug pointer */
-extern drug* 
+/* Struct constructor for type Drug pointer */
+extern Drug* 
 newDrug(char* dName, int* dDoses, short isNG)
 {
-    drug* p = malloc(sizeof(drug));
+    Drug* p = malloc(sizeof(Drug));
     
     p->name = dName; 
     p->doses = dDoses; 
@@ -39,110 +39,110 @@ newDrug(char* dName, int* dDoses, short isNG)
 
 /* Struct destructor for drugs */
 extern void
-drugioDestructor(drug* arrPtr[])
+drugioDestructor(Drug* drugList[])
 {
-    for (int i = 0; arrPtr[i] != NULL; i++) free(*(arrPtr + i));
+    for (int i = 0; drugList[i] != NULL; i++) free(*(drugList + i));
     exit(EXIT_SUCCESS);
     
 }
-
+/* Print help menu */
+static int
+printHelpMenu()
+{
+    printf("============================================================\n"
+           "Help menu:\n\n"
+           "\tType \"exit\" or \"quit\" to exit the program\n"
+           "\tType \"back\" to go back to the previous menu\n"
+           "\tType \"help\" to show this menu\n\n"
+           "============================================================\n"
+          );
+        
+    return(-2);
+}
 /* Make Selection (read user input) */
 static int 
-makeSelection(char* lastObj)
+readUserInput(char* lastObj)
 {
-    char c[20];
+    char c[6];
 
-    do
+    printf("> ");
+    if (!fgets(c, 6, stdin))
     {
-        printf("> ");
-        if (!fgets(c, 20, stdin))
-        {
-            DRUGIO_ERR(DRUGIO_EOF); /* Print error end-of-file */
-            exit(EXIT_FAILURE); /* Bail out */
-        }
+        DRUGIO_ERR(DRUGIO_EOF);
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        if (!strncmp(c, "exit", 4) || !strncmp(c, "quit", 4)) return(-1);
+        if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4)) return(-2);
+        if (!strncmp(c, "help", 4) || !strncmp(c, "Help", 4)) return(printHelpMenu());
+        
+        if (c[0] >= 'a' && c[0] <= (*lastObj - 1)) return((int) (c[0] - 'a'));
         else
         {
-            if (!strncmp(c, "exit", 4) || !strncmp(c, "quit", 4)) return(-1);
-            if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4)) return(-2);
-            if (!strncmp(c, "help", 4) || !strncmp(c, "Help", 4))
-            {
-              puts("============================================================\n"
-                   "Help menu:\n\n"
-                   "\tType \"exit\" or \"quit\" to exit the program\n"
-                   "\tType \"back\" to go back to the previous menu\n"
-                   "\tType \"help\" to show this menu\n\n"
-                   "============================================================\n"
-                  );
-              return(-2);
-            }
-            if (c[0] >= 'a' && c[0] <= (*lastObj - 1)) return((int) (c[0] - 'a'));
-            else
-            {
-                DRUGIO_ERR(DRUGIO_OOR); /* Print error out of range to console */
-                return(-2); /* Try again */
-            }
-        } 
-    } while (c + strlen(c) != NULL);
+            DRUGIO_ERR(DRUGIO_OOR); /* Error: out of range */
+            return(-2); 
+        }
+    } 
 }
 
 /* Print drugs */
-static diPtr 
-drugioMenu(drug* ptr[])
+static DrugAndDoseToPrint 
+drugioMenu(Drug* drugList[])
 {
     char ident;
     int i;
-    int d;
-    drug* idedDrug;
-    diPtr dip; dip.promise = 0;
+    int d = 0;
+    DrugAndDoseToPrint dip; dip.promise = 0;
 
 DRUGIO_MENU:
-    d = 0;
     while(d >= 0)
     {
-        puts("Please type the letter conresponding to the drug taken");
-        puts("then press the enter key. Type \"help\" for help.\n");
+        printf("Please type the letter conresponding to the Drug taken\n"
+               "then press the enter key. Type \"help\" for help.\n\n"
+              );
 
-        /* Print drug names */
-        for (ident = 'a', i = 0; ptr[i] != NULL; ++i, ++ident) printf("[%c] %s\n", ident, ptr[i]->name);
+        /* Print Drug names */
+        for (ident = 'a', i = 0; drugList[i] != NULL; ++i, ++ident) printf("[%c] %s\n", ident, drugList[i]->name);
 
-        d = makeSelection(&ident);
+        d = readUserInput(&ident);
         
         /* Check d */
         if (d < 0) break;
         else
         {
-            /* Early out if only one dose for selected drug */
-            if (!ptr[d]->doses[1])
+            dip.dPtr = drugList[d];
+            /* Early out if only one dose for selected Drug */
+            if (!dip.dPtr->doses[1])
             {
                 dip.iPtr = 0;
-                dip.dPtr = ptr[d];
                 break;
             }
-            else idedDrug = ptr[d];
-
-            printf("\nDoses for %s:\n\n", idedDrug->name);
             
-            /* Print the drug doses */
-            for (ident = 'a', i = 0; idedDrug->doses[i] != 0 ; ++i, ++ident)
+            printf("\nDoses for %s:\n\n", dip.dPtr->name);
+            
+            /* Print the Drug doses */
+            for (ident = 'a', i = 0; dip.dPtr->doses[i] != 0 ; ++i, ++ident)
             {
-                if (idedDrug->isNanoGram) printf("[%c] %2g mg\n", ident, (idedDrug->doses[i] / 1000.0));
-                else printf("[%c] %d mg\n", ident, idedDrug->doses[i]);
+                printf("[%c] ", ident);
+                
+                if (!dip.dPtr->isNanoGram) printf("%d mg\n", dip.dPtr->doses[i]);
+                else printf("%2g mg\n", (dip.dPtr->doses[i] / 1000.0));
             }
 
-            d = makeSelection(&ident);
+            d = readUserInput(&ident);
             
             /* Check d */
-            if (d < 0) break;
-            else 
-            {
-                dip.iPtr = d;
-                dip.dPtr = idedDrug;
-                break;
-            }
-        } /* else no early out */
+            if (d >= 0) dip.iPtr = d;
+            break;
+        } /* else of: if (d < 0) */
     } /* while(d >= 0) */
     
-    if (d == -2) goto DRUGIO_MENU;
+    if (d == -2) 
+    {
+        d = 0;
+        goto DRUGIO_MENU;    
+    }
     if (d == -1) dip.promise = -1;
     
     return(dip);
@@ -150,12 +150,12 @@ DRUGIO_MENU:
 
 /* Date parsing and formatting */
 static char* 
-formattedDate(short isFullFormat)
+formatDateToString(short isFullFormat)
 {
     size_t strftime(char *, size_t, const char *, const struct tm *);
 
-    time_t rawtime; struct tm *info;
-    time(&rawtime); info = localtime(&rawtime);
+    time_t rawtime; struct tm *timeNow;
+    time(&rawtime); timeNow = localtime(&rawtime);
     
 
     static char fileDate[19]
@@ -167,20 +167,20 @@ formattedDate(short isFullFormat)
     {
         default:
         case 0 : 
-            strftime(fileDate, 19, "log-%F.txt", info);
+            strftime(fileDate, 19, "log-%F.txt", timeNow);
             return(fileDate);
         case 1 : 
-            strftime(fullDate, 19, "%F - %H:%M", info);
+            strftime(fullDate, 19, "%F - %H:%M", timeNow);
             return(fullDate);
         case 2 :
-            strftime(fullTime, 6, "%H:%M", info);
+            strftime(fullTime, 6, "%H:%M", timeNow);
             return(fullTime);
     }
 }
 
 /* Ask to run again */
 static short 
-runAgain()
+doesUserWantToRunAgain()
 {
     char c[4];
 
@@ -190,25 +190,15 @@ runAgain()
         DRUGIO_ERR(DRUGIO_EOF);
         exit(EXIT_FAILURE);
     }
-    else
-    {
-        if (c[0] == 'y' || c[0] == 'Y') return(1);
-        else return(0);
-    }
+    else if (c[0] == 'y' || c[0] == 'Y') return(1);
+    else return(0);
 }
 
-/* Set path of file to log to */
-extern void 
-drugioSetPath(char* s)
-{
-    drugioFilePath = s;
-}
-
-/* Show yesterday's log */
+/* Show today's log */
 static void 
-showLogs(char** fpString)
+showLogs(char** filePathString)
 {
-    FILE* f = fopen(*fpString, "r");
+    FILE* f = fopen(*filePathString, "r");
     int c;
     
     /* Go to eof */
@@ -217,9 +207,9 @@ showLogs(char** fpString)
     if (ftell(f))
     {
         printf("—————————————————————————————————————————————\n"
-                "|%*s%*c\n"
-                "—————————————————————————————————————————————\n",
-                24, (formattedDate(2)), 20, '|'
+               "|%*s%*c\n"
+               "—————————————————————————————————————————————\n",
+                24, (formatDateToString(2)), 20, '|'
               );
 
         fseek(f, 0, SEEK_SET);
@@ -227,43 +217,51 @@ showLogs(char** fpString)
         {
             c = fgetc(f);
             if (feof(f)) break;
-            printf("%c", c);
+            else printf("%c", c);
         }
-        printf("\n—————————————————————————————————————————————\n");
+        printf("—————————————————————————————————————————————\n");
     }
     fclose(f);
 }
 
 /* Print the end result */
 extern void
-printd(drug* arrPtr[])
+printd(Drug* drugList[], char* drugioLogFolderPath)
 {
-    char* theDate = formattedDate(1);
-    char* theFileDate = formattedDate(0);
+    DrugAndDoseToPrint dip;
     
-    char* buffer = malloc((strlen(theFileDate) + strlen(drugioFilePath) + 1));
-    strcpy(buffer, drugioFilePath); strcat(buffer, theFileDate);
+    int d;
+    
+    char* theDate = formatDateToString(1);
+    char* theFileName = formatDateToString(0);
+    
+    char* completePathToFile = malloc((strlen(theFileName) + strlen(drugioLogFolderPath) + 1));
+    
+    strcpy(completePathToFile, drugioLogFolderPath); 
+    strcat(completePathToFile, theFileName);
 
-    FILE *ftoday; ftoday = fopen(buffer, "a+");
+    FILE *logFile = fopen(completePathToFile, "a+");
     
+    #define DRUGIO_USE_FILE (DRUGIO_DEBUG) ? stdout : logFile
+
     do
     {
-        showLogs(&buffer);
+        showLogs(&completePathToFile);
         
-        diPtr dip = drugioMenu(arrPtr);
+        dip = drugioMenu(drugList);
+        
         if (dip.promise == -1) break;
         else
         {
-            drug* p = dip.dPtr; 
-            int d = dip.iPtr;
+            d = dip.iPtr;
 
-            if (p->isNanoGram) 
-                fprintf(DRUGIO_USE_FILE,"[%s] %s %2g mg\n", theDate, p->name, (p->doses[d] / 1000.0));
-            else 
-                fprintf(DRUGIO_USE_FILE,"[%s] %s %d mg\n", theDate, p->name, p->doses[d]);
+            fprintf(DRUGIO_USE_FILE,"[%s] %s ", theDate, dip.dPtr->name);
+            
+            if (!dip.dPtr->isNanoGram) fprintf(DRUGIO_USE_FILE,"%d mg\n", dip.dPtr->doses[d]);
+            else fprintf(DRUGIO_USE_FILE,"%2g mg\n", (dip.dPtr->doses[d] / 1000.0));
         }
-    } while (runAgain());
+    } while (doesUserWantToRunAgain());
 
-    fclose(ftoday); 
-    free(buffer);
+    fclose(logFile); 
+    free(completePathToFile);
 }
