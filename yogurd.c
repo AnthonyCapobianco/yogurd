@@ -21,13 +21,13 @@
 
 int main(void)
 {    
-    
-    drugList( newDrug("Ritalin", mg(5, 10, 15, 20))
-            , newDrug("Concerta", mg(36, 72))
-            , newDrug("Effexor", mg(225))
-            , newDrug("Xanax", ng(125, 250, 500, 1000, 1500, 2000))
-            , newDrug("Akton", mg(1, 2, 3, 4))
-            , newDrug("Zolpidem", mg(5, 10, 15))
+    /* Doses are in microgram */
+    drugList( newDrug("Ritalin", doses(5000, 10000, 15000, 20000))
+            , newDrug("Concerta", doses(36000, 72000))
+            , newDrug("Effexor", doses(225000))
+            , newDrug("Xanax", doses(125, 250, 500, 1000, 1500, 2000))
+            , newDrug("Akton", doses(1000, 2000, 3000, 4000))
+            , newDrug("Zolpidem", doses(5000, 10000, 15000))
             );
     
     printd(drugList, "./logs/");

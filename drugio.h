@@ -22,14 +22,6 @@
 #ifndef DRUGIO_H_INCLUDED
 #define DRUGIO_H_INCLUDED
 
-#ifndef DRUGIO_ARR_END
-#define DRUGIO_ARR_END 0
-#endif
-
-#ifndef DRUGIO_DEBUG
-#define DRUGIO_DEBUG 0
-#endif
-
 #ifndef DRUGIO_ERR
 #define DRUGIO_ERR(x) fprintf(stderr, x)
 #endif
@@ -42,34 +34,40 @@
 #define DRUGIO_OOR "Error: The character you entered is not part of the selection\n"
 #endif
 
-#ifndef mg
-#define mg(...) (int[]) {__VA_ARGS__, 0}, 0
+#ifndef NUMBER_OF_DOSES
+#define NUMBER_OF_DOSES(...)  (sizeof((unsigned int[]){0, ##__VA_ARGS__})/sizeof(unsigned int)-1)
 #endif
 
-#ifndef ng
-#define ng(...) (int[]) {__VA_ARGS__, 0}, 1
+#ifndef doses
+#define doses(...) (unsigned int[]) {__VA_ARGS__}, NUMBER_OF_DOSES(__VA_ARGS__)
 #endif
 
 #ifndef drugList
 #define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}
 #endif
 
+#ifndef PROMISE
+#define PROMISE unsigned char
+#endif
+
 /* Type Drug of type struct */
 typedef struct _Drug
-{   char* name;
-    int* doses;
-    short isNanoGram;
+{   char *medicationName;
+    size_t numberOfDoses;
+    unsigned int medicationDoses[];
 } Drug;
 
 /* Type DrugAndDoseToPrint of type struct */
 typedef struct _DrugAndDoseToPrint
-{    int iPtr;
-     Drug* dPtr;
-     short promise;
+{   Drug* userSelectedMedication;
+    unsigned int userSelectedDosage;
+    PROMISE promise;
 } DrugAndDoseToPrint;
 
+extern Drug* drugList[];
+
 /* Functions prototypes */
-extern Drug* newDrug( char* drugName, int* drugDoses, short isNanoGram);
+extern Drug* newDrug(char *medicationName, unsigned int medicationDoses[], size_t numberOfDoses);
 extern void drugioDestructor(Drug* drugList[]);
 extern void printd(Drug* drugList[], char* drugioLogFolderPath);
 

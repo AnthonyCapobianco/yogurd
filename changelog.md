@@ -16,3 +16,8 @@
 * Minor improvements (more descriptive names)
 * printd now directly takes the path argument instead of having a global variable 
 * drugioMenu doesn't create a drug pointer anymore. 
+
+# 1.0.6
+
+* Revised data structure
+* Revised naming scheme to make it more descriptive
