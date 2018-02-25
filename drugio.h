@@ -44,26 +44,14 @@
 
 #ifndef mg
 #define mg(...) (int[]) {__VA_ARGS__, 0}, 0
-#else
-    #ifndef drugio_mg
-        #define drugio_mg(...) (int[]) {__VA_ARGS__, 0}, 0
-    #endif
 #endif
 
 #ifndef ng
 #define ng(...) (int[]) {__VA_ARGS__, 0}, 1
-#else
-    #ifndef drugio_ng
-        #define drugio_ng(...) (int[]) {__VA_ARGS__, 0}, 1
-    #endif
 #endif
 
 #ifndef drugList
 #define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}
-#else
-    #ifndef drugio_drugList
-        #define drugio_drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}
-    #endif
 #endif
 
 /* Type Drug of type struct */
