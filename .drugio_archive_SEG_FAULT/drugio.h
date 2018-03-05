@@ -22,6 +22,14 @@
 #ifndef DRUGIO_H_INCLUDED
 #define DRUGIO_H_INCLUDED
 
+#ifndef DRUGIO_ARR_END
+#define DRUGIO_ARR_END 0
+#endif
+
+#ifndef DRUGIO_DEBUG
+#define DRUGIO_DEBUG 0
+#endif
+
 #ifndef DRUGIO_ERR
 #define DRUGIO_ERR(x) fprintf(stderr, x)
 #endif
@@ -34,41 +42,59 @@
 #define DRUGIO_OOR "Error: The character you entered is not part of the selection\n"
 #endif
 
-#ifndef NUMBER_OF_DOSES
-#define NUMBER_OF_DOSES(...)  (sizeof((unsigned int[]){0, ##__VA_ARGS__})/sizeof(unsigned int)-1)
+#ifndef mg
+#define mg(...) (int[]) {__VA_ARGS__, 0}, 0
+#else
+    #ifndef drugio_mg
+        #define drugio_mg(...) (int[]) {__VA_ARGS__, 0}, 0
+    #endif
 #endif
 
-#ifndef doses
-#define doses(...) (unsigned int[]) {__VA_ARGS__}, NUMBER_OF_DOSES(__VA_ARGS__)
+#ifndef ng
+#define ng(...) (int[]) {__VA_ARGS__, 0}, 1
+#else
+    #ifndef drugio_ng
+        #define drugio_ng(...) (int[]) {__VA_ARGS__, 0}, 1
+    #endif
 #endif
 
 #ifndef drugList
-#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}
+#define drugList(...) drug* drugList[] = {__VA_ARGS__, NULL}
+#else
+    #ifndef drugio_drugList
+        #define drugio_drugList(...) drug* drugList[] = {__VA_ARGS__, NULL}
+    #endif
 #endif
 
-#ifndef PROMISE
-#define PROMISE unsigned char
+#ifndef DRUGIO_USE_FILE
+#define DRUGIO_USE_FILE (DRUGIO_DEBUG) ? stdout : ftoday
 #endif
 
-/* Type Drug of type struct */
-typedef struct _Drug
-{   char *medicationName;
-    size_t numberOfDoses;
-    unsigned int medicationDoses[];
-} Drug;
+/* Type drug of type struct */
+typedef struct DRUG
+{   char* name;
+    int* doses;
+    short isNanoGram;
+} drug;
 
-/* Type DrugAndDoseToPrint of type struct */
-typedef struct _DrugAndDoseToPrint
-{   Drug* userSelectedMedication;
-    unsigned int userSelectedDosage;
-    PROMISE promise;
-} DrugAndDoseToPrint;
-
-extern Drug* drugList[];
+/* Type diPtr of type struct */
+typedef struct PRT_DRUG_INT
+{    int iPtr;
+     drug* dPtr;
+} diPtr;
 
 /* Functions prototypes */
-extern Drug* newDrug(char *medicationName, unsigned int medicationDoses[], size_t numberOfDoses);
-extern void drugioDestructor(Drug* drugList[]);
-extern void printd(Drug* drugList[], char* drugioLogFolderPath);
+extern drug* newDrug( char*, int*, short);
+static void drugioDestructor(drug* arrPtr[]);
+int makeSelection(char*);
+static diPtr drugioMenu(drug* ptr[]);
+char* formatedDate(short);
+short runAgain(void);
+void showLogs(char**);
+void printd(drug* arrPtr[]);
+void drugioSetPath(char*);
+
+/* Global constant */
+const char* drugioFilePath;
 
 #endif

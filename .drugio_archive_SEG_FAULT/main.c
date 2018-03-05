@@ -17,26 +17,21 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#include "resources/drugio.h"
+#include "./drugio.h"
 
 int main(void)
 {    
     
     drugList( newDrug("Ritalin", mg(5, 10, 15, 20))
-            , newDrug("Concerta", mg(36, 72, 108))
+            , newDrug("Concerta", mg(36, 72))
             , newDrug("Effexor", mg(225))
             , newDrug("Xanax", ng(125, 250, 500, 1000, 1500, 2000))
             , newDrug("Akton", mg(1, 2, 3, 4))
             , newDrug("Zolpidem", mg(5, 10, 15))
-            , newDrug("Pantomed", mg(20, 40))
-            , newDrug("Dafalgan", mg(500, 1000))
-            , newDrug("DXM", mg(50, 100, 150, 200, 250))
-            , newDrug("chlorphenamine", ng(3400))
             );
     
-    printd(drugList, "./logs/");
-    
-    drugioDestructor(drugList);
-    
-    return(EXIT_FAILURE);
+    drugioSetPath("./logs/"); 
+    printd(drugList);
+
+    return(0);
 }
