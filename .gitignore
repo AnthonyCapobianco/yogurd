@@ -1,0 +1,8 @@
+# Ignore everything but .c and .h files
+!*.c
+!*.h
+!*.md
+/logs/*
+!/resources/*
+/.*
+!.gitignore
