@@ -196,29 +196,36 @@ doesUserWantToRunAgain()
 }
 
 /* Show today's log */
-static void 
+static int 
 showLogs(char** filePathString)
 {
-    FILE* f = fopen(*filePathString, "r");
-    int c;
     
-    /* Go to eof */
-    fseek(f, 0, SEEK_END);
-    /* Check if eof is at 0 (aka empty file) */
-    if (ftell(f))
+    mkLargerBox(formatDateToString(2), 39);
+    
+    FILE* f = fopen(*filePathString, "r");
+    
+    if (f == NULL) return -1;
+    else
     {
-        mkLargerBox(formatDateToString(2), 39);
-
-        fseek(f, 0, SEEK_SET);
-        while(1)
+        /* Go to eof */
+        fseek(f, 0, SEEK_END);
+        /* Check if eof is at 0 (aka empty file) */
+        if (ftell(f))
         {
-            c = fgetc(f);
-            if (feof(f)) break;
-            else printf("%c", c);
+            int c;
+
+            fseek(f, 0, SEEK_SET);
+            while(1)
+            {
+                c = fgetc(f);
+                if (feof(f)) break;
+                else printf("%c", c);
+            }
+            drawHorizontalLine(39 + 6);
         }
-        drawHorizontalLine(39 + 6);
+        fflush(f); fclose(f);
+        return 0;
     }
-    fflush(f); fclose(f);
 }
 
 /* Print the end result */
@@ -241,22 +248,22 @@ printd(Drug* drugList[], char* drugioLogFolderPath)
     {
         showLogs(&completePathToFile);
         
-        FILE *logFile = fopen(completePathToFile, "a+");
-        
         dip = drugioMenu(drugList);
         
         if (dip.promise == -1) break;
         else
         {
             d = dip.iPtr;
+            
+            FILE *logFile = fopen(completePathToFile, "a+");
 
             fprintf(DRUGIO_USE_FILE,"[%s] %s ", theDate, dip.dPtr->name);
             
             if (!dip.dPtr->isNanoGram) fprintf(DRUGIO_USE_FILE,"%d mg\n", dip.dPtr->doses[d]);
             else fprintf(DRUGIO_USE_FILE,"%2g mg\n", (dip.dPtr->doses[d] / 1000.0));
+            fflush(logFile); fclose(logFile); 
         }
         
-        fflush(logFile); fclose(logFile); 
     } while (doesUserWantToRunAgain());
 
     free(completePathToFile);

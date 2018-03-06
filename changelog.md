@@ -20,3 +20,7 @@
 # 1.0.6
 
 * Fixed log not updating when user choses to run again.
+
+# 1.0.7
+
+* Fixed seg fault if file doesn't exist while showLogs() is called. 
