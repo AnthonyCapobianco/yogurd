@@ -65,7 +65,7 @@ typedef struct _Drug
 
 /* Type DrugAndDoseToPrint of type struct */
 typedef struct _DrugAndDoseToPrint
-{    int iPtr;
+{    int doseOffset;
      Drug* dPtr;
      short promise;
 } DrugAndDoseToPrint;

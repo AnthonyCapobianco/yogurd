@@ -117,7 +117,7 @@ DRUGIO_MENU:
             /* Early out if only one dose for selected Drug */
             if (!dip.dPtr->doses[1])
             {
-                dip.iPtr = 0;
+                dip.doseOffset = 0;
                 break;
             }
             
@@ -134,7 +134,7 @@ DRUGIO_MENU:
 
             d = readUserInput(&ident);
             
-            if (d >= 0) dip.iPtr = d;
+            if (d >= 0) dip.doseOffset = d;
             break;
         } /* else of: if (d < 0) */
     } /* while(d >= 0) */
@@ -253,7 +253,7 @@ printd(Drug* drugList[], char* drugioLogFolderPath)
         if (dip.promise == -1) break;
         else
         {
-            d = dip.iPtr;
+            d = dip.doseOffset;
             
             FILE *logFile = fopen(completePathToFile, "a+");
 
@@ -261,6 +261,7 @@ printd(Drug* drugList[], char* drugioLogFolderPath)
             
             if (!dip.dPtr->isNanoGram) fprintf(DRUGIO_USE_FILE,"%d mg\n", dip.dPtr->doses[d]);
             else fprintf(DRUGIO_USE_FILE,"%2g mg\n", (dip.dPtr->doses[d] / 1000.0));
+            
             fflush(logFile); fclose(logFile); 
         }
         
