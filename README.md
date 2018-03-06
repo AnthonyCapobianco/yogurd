@@ -1,12 +1,10 @@
 # yogurd | Beta 1.0.7
 
-___
-
 yogurd is designed to provide an easy way for users to log doses of the medication(s) they use.
 
 yogurd is currently in beta. 
 
-The release version will include the following features:
+The following updates will introduce features:
 
 * Version 1.1 Database integration.
 
