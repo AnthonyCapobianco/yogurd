@@ -19,7 +19,8 @@
  */
 #include "resources/drugio.h"
 
-int main(void)
+int 
+main(void)
 {    
     
     drugList( newDrug("Ritalin", mg(5, 10, 15, 20))
@@ -34,7 +35,7 @@ int main(void)
             , newDrug("chlorphenamine", ng(3400))
             );
     
-    printd(drugList, "./logs/");
+    printd("./logs/", drugList);
     
     drugioDestructor(drugList);
     

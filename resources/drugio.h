@@ -72,7 +72,7 @@ typedef struct _DrugAndDoseToPrint
 
 /* Functions prototypes */
 extern Drug* newDrug(char* drugName, int* drugDoses, short isNanoGram);
-extern void printd(Drug* drugList[], char* drugioLogFolderPath);
+extern void printd(const char* drugioLogFolderPath, Drug* drugList[]);
 extern void drugioDestructor(Drug* drugList[]);
 
 #endif

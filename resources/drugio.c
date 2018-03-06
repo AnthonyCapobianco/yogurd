@@ -230,7 +230,7 @@ showLogs(char** filePathString)
 
 /* Print the end result */
 extern void
-printd(Drug* drugList[], char* drugioLogFolderPath)
+printd(const char* drugioLogFolderPath, Drug* drugList[])
 {
     DrugAndDoseToPrint dip;
     
