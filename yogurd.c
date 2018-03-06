@@ -38,5 +38,5 @@ int main(void)
     
     drugioDestructor(drugList);
     
-    return(EXIT_FAILURE);
+    return EXIT_FAILURE;
 }
