@@ -17,10 +17,17 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+#include <stdbool.h>
 #include <stdlib.h> /* Need it for NULL */
 
 #ifndef DRUGIO_H_INCLUDED
 #define DRUGIO_H_INCLUDED
+
+/* If the box above the logs (where the time appears) is scewed
+ * you'll need to find the value for the box sizing that works 
+ * with your font (the one of the shell you use to run this)
+ */
+#define BOX_SIZE 39
 
 #ifndef DRUGIO_ARR_END
 #define DRUGIO_ARR_END 0
@@ -43,11 +50,11 @@
 #endif
 
 #ifndef mg
-#define mg(...) (int[]) {__VA_ARGS__, 0}, 0
+#define mg(...) (int[]) {__VA_ARGS__, 0}, false
 #endif
 
 #ifndef ng
-#define ng(...) (int[]) {__VA_ARGS__, 0}, 1
+#define ng(...) (int[]) {__VA_ARGS__, 0}, true
 #endif
 
 #ifndef drugList
@@ -60,19 +67,21 @@
 typedef struct _Drug
 {   char* name;
     int* doses;
-    short isNanoGram;
+    bool isNanoGram;
 } Drug;
 
 /* Type DrugAndDoseToPrint of type struct */
 typedef struct _DrugAndDoseToPrint
-{    int doseOffset;
-     Drug* dPtr;
-     short promise;
+{    float drugDose;
+     char* drugName;
+     bool promise;
 } DrugAndDoseToPrint;
 
 /* Functions prototypes */
-extern Drug* newDrug(char* drugName, int* drugDoses, short isNanoGram);
-extern void printd(const char* drugioLogFolderPath, Drug* drugList[]);
+extern Drug* newDrug(char* drugName, int* drugDoses, bool isNanoGram);
+extern void _fprintd(const char* drugioLogFolderPath, Drug* drugList[]);
 extern void drugioDestructor(Drug* drugList[]);
+
+#define fprintd(P, L) _fprintd(P, L); drugioDestructor(L)
 
 #endif

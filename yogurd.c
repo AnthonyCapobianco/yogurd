@@ -35,9 +35,7 @@ main(void)
             , newDrug("chlorphenamine", ng(3400))
             );
     
-    printd("./logs/", drugList);
-    
-    drugioDestructor(drugList);
+    fprintd("./logs/", drugList);
     
     return EXIT_FAILURE;
 }
