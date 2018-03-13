@@ -26,11 +26,20 @@
 #include "boxes.h"
 #include "drugio.h"
 
+static unsigned int mallocedDrugPointers = 0;
+
 /* Struct constructor for type Drug pointer */
 extern Drug* 
 newDrug(char* dName, int* dDoses, bool isNG)
 {
         Drug* p = malloc(sizeof(Drug));
+        
+        if (p == NULL)
+        {
+                fprintf(stderr, "ERROR: malloc failed. %u Drug pointers were malloced.", mallocedDrugPointers);
+                exit(EXIT_FAILURE);
+        }
+        else mallocedDrugPointers++;
         
         p->name = dName; 
         p->doses = dDoses; 
@@ -41,7 +50,7 @@ newDrug(char* dName, int* dDoses, bool isNG)
 
 /* Struct destructor for drugs */
 extern void
-drugioDestructor(Drug* drugList[])
+free_Drug_array(Drug* drugList[])
 {
         for (int i = 0; drugList[i] != NULL; i++) free(*(drugList + i));
         exit(EXIT_SUCCESS);
@@ -50,7 +59,7 @@ drugioDestructor(Drug* drugList[])
 
 /* Print help menu */
 static void
-printHelpMenu()
+print_help_menu()
 {
         printf("============================================================\n"
                "Help menu:\n\n"
@@ -63,7 +72,7 @@ printHelpMenu()
 
 /* Make Selection (read user input) */
 static int 
-readUserInput(char* lastObj)
+read_user_input(char* lastObj)
 {
         char c[6];
 
@@ -79,7 +88,7 @@ readUserInput(char* lastObj)
                 if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4)) return -2;
                 if (!strncmp(c, "help", 4) || !strncmp(c, "Help", 4))
                 {
-                        printHelpMenu();
+                        print_help_menu();
                         return -2;
                 }
                 
@@ -94,7 +103,7 @@ readUserInput(char* lastObj)
 
 /* Print drugs */
 static DrugAndDoseToPrint 
-drugioMenu(Drug* drugList[])
+drugio_menu(Drug* drugList[])
 {
         Drug *dPtr = NULL;
         DrugAndDoseToPrint dip; dip.promise = true;
@@ -115,7 +124,7 @@ DRUGIO_MENU:
                 /* Print Drug names */
                 for (; drugList[i] != NULL; ++i, ++ident) printf("[%c] %s\n", ident, drugList[i]->name);
 
-                d = readUserInput(&ident);
+                d = read_user_input(&ident);
                 
                 if (d < 0) break;
                 else
@@ -138,7 +147,7 @@ DRUGIO_MENU:
                                         else printf("%-2g mg\n", (float) (dPtr->doses[i] / 1000.0f));
                                 }
 
-                                d = readUserInput(&ident);
+                                d = read_user_input(&ident);
                         }
                         break;
                 } /* else of: if (d < 0) */
@@ -158,7 +167,7 @@ DRUGIO_MENU:
 
 /* Date parsing and formatting */
 static char* 
-formatDateToString(short isFullFormat)
+format_date_to_string(short isFullFormat)
 {
         size_t strftime(char *, size_t, const char *, const struct tm *);
 
@@ -182,7 +191,7 @@ formatDateToString(short isFullFormat)
 
 /* Ask to run again */
 static bool
-doesUserWantToRunAgain()
+does_user_want_to_run_again()
 {
         char c[4];
 
@@ -208,7 +217,7 @@ callback(void *NotUsed, int argc, char **argv, char **azColName)
 }
 
 static int
-printLogsFromDate(sqlite3 *dbPtr, int logDatabaseHandler, char *date)
+print_logs_from_date(sqlite3 *dbPtr, int logDatabaseHandler, char *date)
 {
         char *zErrMsg = 0;
         const char* data = "Callback function called";
@@ -229,12 +238,10 @@ printLogsFromDate(sqlite3 *dbPtr, int logDatabaseHandler, char *date)
 }
 
 static int
-addToLogs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime, char* drug, float dose)
+add_to_logs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime, char* drug, float dose)
 {
         char *zErrMsg = 0;
         const char* data = "Callback function called"; /* For debug */
-
-        if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
 
         char *sqlStatement = sqlite3_mprintf("INSERT INTO logs(theDate, theTime, name, dose) VALUES('%q','%q','%s','%2g')", 
                                              theDate, theTime, drug, dose
@@ -256,12 +263,12 @@ addToLogs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime, 
 
 /* Show today's log */
 static int 
-showLogs(sqlite3 *dbPtr, int logDatabaseHandler, char* theTime, char* theDate)
+show_logs(sqlite3 *dbPtr, int logDatabaseHandler, char* theTime, char* theDate)
 {
         
         mkLargerBox(theTime, BOX_SIZE);
         
-        int ret = printLogsFromDate(dbPtr, logDatabaseHandler, theDate);
+        int ret = print_logs_from_date(dbPtr, logDatabaseHandler, theDate);
         
         drawHorizontalLine(BOX_SIZE + 6);
         
@@ -270,10 +277,10 @@ showLogs(sqlite3 *dbPtr, int logDatabaseHandler, char* theTime, char* theDate)
 
 /* Print the end result */
 extern void
-_fprintd(const char* dbPath, Drug* drugList[])
+do_fprintd(const char* dbPath, Drug* drugList[])
 {
-        char* theDate = formatDateToString(1);
-        char* theTime = formatDateToString(0);
+        char* theDate = format_date_to_string(1);
+        char* theTime = format_date_to_string(0);
 
         sqlite3 *dbPtr;
 
@@ -282,14 +289,14 @@ _fprintd(const char* dbPath, Drug* drugList[])
         if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
         else do
         {
-                showLogs(dbPtr, logDatabaseHandler, theTime, theDate);
+                show_logs(dbPtr, logDatabaseHandler, theTime, theDate);
 
-                DrugAndDoseToPrint dip = drugioMenu(drugList);
+                DrugAndDoseToPrint dip = drugio_menu(drugList);
 
                 if (!dip.promise) break;
-                else addToLogs(dbPtr, logDatabaseHandler, theDate, theTime, dip.drugName, dip.drugDose);
+                else add_to_logs(dbPtr, logDatabaseHandler, theDate, theTime, dip.drugName, dip.drugDose);
 
-        } while (doesUserWantToRunAgain());
+        } while (does_user_want_to_run_again());
 
         sqlite3_close(dbPtr);
 }
