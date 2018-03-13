@@ -1,4 +1,4 @@
-# yogurd | Beta 1.1.0
+# yogurd | Beta 1.1.0~b
 
 yogurd is designed to provide an easy way for users to log doses of the medication(s) they use.
 
@@ -17,4 +17,5 @@ The following updates will introduce features:
 
 You can expect the release to happen before the end of August 2018 </br>
 (I'm in college, this is a side project I'm making for fun.) 
+
 

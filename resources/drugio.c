@@ -270,25 +270,26 @@ showLogs(sqlite3 *dbPtr, int logDatabaseHandler, char* theTime, char* theDate)
 
 /* Print the end result */
 extern void
-_fprintd(Drug* drugList[])
+_fprintd(const char* dbPath, Drug* drugList[])
 {
         char* theDate = formatDateToString(1);
         char* theTime = formatDateToString(0);
 
         sqlite3 *dbPtr;
-        int logDatabaseHandler = sqlite3_open("./logs/logs.db", &dbPtr);
-        
+
+        int logDatabaseHandler = sqlite3_open(dbPath, &dbPtr);
+
         if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
         else do
         {
                 showLogs(dbPtr, logDatabaseHandler, theTime, theDate);
-                
+
                 DrugAndDoseToPrint dip = drugioMenu(drugList);
-                
+
                 if (!dip.promise) break;
                 else addToLogs(dbPtr, logDatabaseHandler, theDate, theTime, dip.drugName, dip.drugDose);
-                
+
         } while (doesUserWantToRunAgain());
-        
+
         sqlite3_close(dbPtr);
 }

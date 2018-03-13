@@ -36,6 +36,8 @@
  */
 #define DRUGIO_DATE_FORMAT "%d-%m-%Y"
 
+#define DRUGIO_DB_FILE_RELATIVE_PATH "yogurd/logs/logs.db"
+
 #ifndef DRUGIO_DEBUG
 #define DRUGIO_DEBUG 0
 #endif
@@ -49,7 +51,7 @@
 
 #define ng(...) (int[]) {__VA_ARGS__, 0}, true
 
-#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}; _fprintd(drugList); drugioDestructor(drugList)
+#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}; _fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drugList); drugioDestructor(drugList)
 
 /* Type Drug of type struct */
 typedef struct _Drug
@@ -67,7 +69,7 @@ typedef struct _DrugAndDoseToPrint
 
 /* Functions prototypes */
 extern Drug* newDrug(char*, int*, bool);
-extern void _fprintd(Drug* drugList[]);
+extern void _fprintd(const char*, Drug* drugList[]);
 extern void drugioDestructor(Drug* drugList[]);
 
 #endif
