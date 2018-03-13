@@ -69,7 +69,8 @@ longestString(size_t numberOfNumbersToCompare, StringArray* arrayOfStrings[])
         
         numberArray = malloc(numberOfNumbersToCompare * sizeof(int));
         
-        for (i = 0; i < numberOfNumbersToCompare; i++) numberArray[i] = strlen(arrayOfStrings[i]->string);
+        for (i = 0; i < numberOfNumbersToCompare; i++)
+            numberArray[i] = (int) strlen(arrayOfStrings[i]->string);
         
         result = numberArray[0];
                 

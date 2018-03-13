@@ -5,7 +5,7 @@
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
+ *  the Free Software Foundation, eithyer version 3 of the License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -34,8 +34,6 @@ main(void)
             , newDrug("DXM", mg(50, 100, 150, 200, 250))
             , newDrug("chlorphenamine", ng(3400))
             );
-    
-    fprintd("./logs/", drugList);
     
     return EXIT_FAILURE;
 }

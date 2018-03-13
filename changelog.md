@@ -36,4 +36,14 @@
 * There is no need to add the destructor in the main file. It's done through preprocessing (atm.)
 * The size of the "box" surrounding the time (at the top of the program) is now defined in the drugio.h header instead of being static in the showLogs() function. The default is 39 but it varies if you don't use a monospace font in your shell.
 * For the medications where the doses are in micrograms,
-  the doses are now displayed alligned to the left instead of being all of being all over the place. 
+  the doses are now displayed alligned to the left instead of being all of being all over the place.
+  
+# 1.1.0
+
+* Fixed a bug where an early out in drugioMenu() would cause the wrong dose to be logged. 
+* Sqlite3 database integration (build with `-Ofast -l sqlite3` sqlite3 must be installed on your system)
+* The drugList() macro now takes care of calling _fprintd() and drugiodestructor() since they always take the same arguments as parameters.
+* You can now change the date format in drugio.h look for `#define DRUGIO_DATE_FORMAT`
+
+NOTE: At this moment the database integration does not come with new features it allows. </br>
+That is planned for 1.1.X with X > 1 and should be final in 1.3 

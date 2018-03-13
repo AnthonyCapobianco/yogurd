@@ -17,6 +17,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+
 #include <stdbool.h>
 #include <stdlib.h> /* Need it for NULL */
 
@@ -28,40 +29,27 @@
  * with your font (the one of the shell you use to run this)
  */
 #define BOX_SIZE 39
-
-#ifndef DRUGIO_ARR_END
-#define DRUGIO_ARR_END 0
-#endif
+/* Change the ORDER of those format parameters if 
+ * you want the date to be displayed in a different manner.
+ * Right now the order is day month year "%d-%m-%Y" 
+ * If you wanted month day year you'd use "%m-%d-%Y"
+ */
+#define DRUGIO_DATE_FORMAT "%d-%m-%Y"
 
 #ifndef DRUGIO_DEBUG
 #define DRUGIO_DEBUG 0
 #endif
 
-#ifndef DRUGIO_ERR
 #define DRUGIO_ERR(x) fprintf(stderr, x)
-#endif
+#define DRUGIO_EOF "ERROR: Your choice isn't correct\n"
+#define DRUGIO_OOR "ERROR: The character you entered is not part of the selection\n"
+#define SQLITE_NOT_OK(dbPtr) fprintf(stderr, "ERROR: SQLITE_ERR_MSG: %s\n", sqlite3_errmsg(dbPtr))
 
-#ifndef DRUGIO_EOF
-#define DRUGIO_EOF "Error: Your choice isn't correct\n"
-#endif
-
-#ifndef DRUGIO_OOR
-#define DRUGIO_OOR "Error: The character you entered is not part of the selection\n"
-#endif
-
-#ifndef mg
 #define mg(...) (int[]) {__VA_ARGS__, 0}, false
-#endif
 
-#ifndef ng
 #define ng(...) (int[]) {__VA_ARGS__, 0}, true
-#endif
 
-#ifndef drugList
-#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}
-#endif
-
-#define DRUGIO_USE_FILE (DRUGIO_DEBUG) ? stdout : logFile
+#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}; _fprintd(drugList); drugioDestructor(drugList)
 
 /* Type Drug of type struct */
 typedef struct _Drug
@@ -78,10 +66,8 @@ typedef struct _DrugAndDoseToPrint
 } DrugAndDoseToPrint;
 
 /* Functions prototypes */
-extern Drug* newDrug(char* drugName, int* drugDoses, bool isNanoGram);
-extern void _fprintd(const char* drugioLogFolderPath, Drug* drugList[]);
+extern Drug* newDrug(char*, int*, bool);
+extern void _fprintd(Drug* drugList[]);
 extern void drugioDestructor(Drug* drugList[]);
-
-#define fprintd(P, L) _fprintd(P, L); drugioDestructor(L)
 
 #endif
