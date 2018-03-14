@@ -126,8 +126,8 @@ DRUGIO_MENU:
 
                 d = read_user_input(&ident);
                 
-                if (d < 0) break;
-                else
+
+                if (d >= 0 && drugList[d] != NULL)
                 {
                         dPtr = drugList[d];
                         dip.drugName = dPtr->name;
@@ -150,16 +150,21 @@ DRUGIO_MENU:
                                 d = read_user_input(&ident);
                         }
                         break;
-                } /* else of: if (d < 0) */
+                }
+                else break;
         } /* while(d >= 0) */
 
         switch (d)
         {
-                case -2: goto DRUGIO_MENU; break;
+                case -2: goto DRUGIO_MENU;
                 case -1: dip.promise = false; break;
                 default:
-                        if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
-                        else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
+                        if (dPtr == NULL) goto DRUGIO_MENU;
+                        else
+                        {
+                            if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
+                            else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
+                        }
                         break;
         }
         return dip;

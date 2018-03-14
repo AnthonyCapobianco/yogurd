@@ -104,8 +104,7 @@ _mkBox(const char* string, const unsigned long stringLength, const unsigned char
     static unsigned long boxLength; boxLength = stringLength + 9;
     
     static char *staticStringCopy; staticStringCopy = malloc(stringLength);
-    strcpy(staticStringCopy, string);
-    
+    strlcpy(staticStringCopy, string, stringLength);
     drawLine(P_TOP); 
     
     if (isCustomLength) printMultiLine((stringLength - 1), &staticStringCopy);
