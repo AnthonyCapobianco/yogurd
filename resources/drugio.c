@@ -121,7 +121,7 @@ callback(void *NotUsed, int argc, char **argv, char **azColName)
 }
 
 static int
-get_last_id(void *NotUsed, int argc, char **argv, char **azColName)
+set_last_id(void *NotUsed, int argc, char **argv, char **azColName)
 {
         lastIdInTable = parse_string_to_uint(argv[0]);
         return 0;
@@ -142,7 +142,7 @@ print_logs_from_date(char *date)
 static int
 print_logs_from_ID(sqlite3_int64 limit)
 {
-        logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT MAX(ID) FROM logs;", get_last_id, (void*) data, &zErrMsg);
+        logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT MAX(ID) FROM logs;", set_last_id, (void*) data, &zErrMsg);
 
         if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
 
@@ -243,7 +243,7 @@ get_limit_then_print_logs(char *string)
                 idLimit = 1;
                 DRUGIO_ERR("ERROR: minimum 1 log entry. Printing last log entry.\n");
         }
-        print_logs_from_ID(idLimit);
+        print_logs_from_ID((sqlite3_int64) idLimit);
 
         draw_horizontal_line(BOX_SIZE);
 }
@@ -386,6 +386,9 @@ do_fprintd(const char* dbPath, Drug* drugList[])
         if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
         else do
         {
+                
+                system(CLEAR_SCREEN);
+                
                 show_logs(theTime, theDate);
 
                 DrugAndDoseToPrint dip = drugio_menu(drugList);

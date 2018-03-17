@@ -57,3 +57,8 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 # 1.1.1
 
 * Added logs command to show the last X logs. Try "logs 10" for example. 
+
+# 1.1.1~a
+
+* Fixed implicit conversion from uint to signed int 64... (Sorry about that)
+* Added system clear screen command (should work on dos shells and bash)

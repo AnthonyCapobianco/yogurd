@@ -1,4 +1,4 @@
-# yogurd | Beta 1.1.1
+# yogurd | Beta 1.1.1~a
 
 yogurd is designed to provide an easy way for users to log doses of the medication(s) they use.
 

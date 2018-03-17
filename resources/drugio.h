@@ -67,6 +67,16 @@
         do_fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drugList);      \
         free_Drug_array(drugList)                                                       \
 
+
+/* This is most likely right. May not be. */
+#if defined(_WIN32) || defined(_WIN64)
+    #define CLEAR_SCREEN "cls"
+#elif defined(__CYGWIN__) && !defined(_WIN32)
+    #define CLEAR_SCREEN "clear"
+#elif defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+    #define CLEAR_SCREEN "clear"
+#endif
+
 /* Type Drug of type struct */
 typedef struct _Drug
 {   char* name;
