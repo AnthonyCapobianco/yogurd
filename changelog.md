@@ -53,3 +53,7 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 * Change from relative path to db to asolute path so the executable is more "portable"
   in yogurd.c look for `#define DRUGIO_FOLDER_LOCATION` you can replace the value that is double-quoted 
   to reflect the location of the folder where the yogurd folder is located. (This is temporary but necessary until I find a better fix)
+  
+# 1.1.1
+
+* Added logs command to show the last X logs. Try "logs 10" for example. 

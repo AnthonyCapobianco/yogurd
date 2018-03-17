@@ -18,124 +18,139 @@
  *
  */
 #include "boxes.h"
-#define drawLine(x) _drawLine(&boxLength, x)
+#define draw_line(x) do_draw_line(&boxLength, x)
 
 static unsigned char
-didDrawLine(unsigned long *boxLength)
+did_draw_line(unsigned long *boxLength)
 {
-    for (unsigned int i = 0; i < *boxLength; i++) printf(P_BOX_HORIZONTAL_LINE);
-    return 1;
+        for (unsigned int i = 0; i < *boxLength; i++) printf(P_BOX_HORIZONTAL_LINE);
+        return 1;
 }
 
 static void
-_drawLine(unsigned long *boxLength, POSITION isBottom)
+do_draw_line(unsigned long *boxLength, POSITION isBottom)
 {
-    if (isBottom) printf(P_BOX_BOTTOM_LEFT);
-    else printf(P_BOX_TOP_LEFT); 
+        if (isBottom) printf(P_BOX_BOTTOM_LEFT);
+        else printf(P_BOX_TOP_LEFT); 
+        
+        if (did_draw_line(boxLength) && isBottom) puts(P_BOX_BOTTOM_RIGHT); 
+        else puts(P_BOX_TOP_RIGHT);
+}
+
+static void
+print_line(char **stringPtr)
+{
+        printf(P_BOX_VERTICAL_LINE "%*c%s%*c", 5, ' ', *stringPtr, 5, ' '); puts(P_BOX_VERTICAL_LINE);
+}
+
+static void
+print_multi_line(unsigned long lineLength , char **stringPtr)
+{
+        int spacing = (int) ((lineLength) - strlen(*stringPtr)) + 9;
     
-    if (didDrawLine(boxLength) && isBottom) puts(P_BOX_BOTTOM_RIGHT); 
-    else puts(P_BOX_TOP_RIGHT);
-}
-
-static void
-printLine(char **stringPtr)
-{
-    printf(P_BOX_VERTICAL_LINE "%*c%s%*c", 5, ' ', *stringPtr, 5, ' '); puts(P_BOX_VERTICAL_LINE);
-}
-
-static void
-printMultiLine(unsigned long lineLength , char **stringPtr)
-{
-    int spacing = (int) ((lineLength) - strlen(*stringPtr)) + 9;
-    
-    printf(P_BOX_VERTICAL_LINE " %s%-*c", *stringPtr, spacing, ' '); puts(P_BOX_VERTICAL_LINE);
+        printf(P_BOX_VERTICAL_LINE " %s%-*c", *stringPtr, spacing, ' '); puts(P_BOX_VERTICAL_LINE);
 }
 
 static int 
-biggestOfTwoNumber(int n1, int n2)
+biggest_of_two_number(int n1, int n2)
 {
-    return((n1 > n2) ? n1 : n2);
+        return((n1 > n2) ? n1 : n2);
 }
 
 static unsigned long
-longestString(size_t numberOfNumbersToCompare, StringArray* arrayOfStrings[])
+longest_string(size_t numberOfNumbersToCompare, StringArray* arrayOfStrings[])
 {
-        static unsigned int result;
-        static int *numberArray;
-        
-        static size_t i
-                    , j 
-                    ;
-        
-        numberArray = malloc(numberOfNumbersToCompare * sizeof(int));
-        
-        for (i = 0; i < numberOfNumbersToCompare; i++)
-            numberArray[i] = (int) strlen(arrayOfStrings[i]->string);
-        
-        result = numberArray[0];
-                
-        for (j = (numberOfNumbersToCompare - 1); j > 0; j -= 2) 
-                result = biggestOfTwoNumber(result, biggestOfTwoNumber(numberArray[j], numberArray[j - 1]));
-             
-        free(numberArray);
-        
-        return result;
+        if (numberOfNumbersToCompare > 2)
+        {
+                static unsigned int result = 0
+                                  , firstQuery = 0
+                                  ;
+                static int *numberArray;
+
+                static size_t i
+                            , j
+                            ;
+
+                numberArray = malloc(numberOfNumbersToCompare * sizeof(int));
+
+                for (i = 0; i < numberOfNumbersToCompare; i++)
+                        numberArray[i] = (int) strlen(arrayOfStrings[i]->string);
+
+                result = numberArray[0];
+
+                for (j = (numberOfNumbersToCompare - 1); j > 0; j -= 2)
+                {
+                        firstQuery = biggest_of_two_number(numberArray[j], numberArray[j - 1]);
+                        result = biggest_of_two_number(result, firstQuery);
+                }
+
+
+                free(numberArray);
+                return result;
+        }
+        else return - 1;
 }
 
 extern StringArray*
-newLine(char *string)
+new_line(char *string)
 {
-    StringArray *p = malloc(sizeof(StringArray));
+        StringArray *p = malloc(sizeof(StringArray));
     
-    p->string = string;
+        p->string = string;
     
-    return(p);
+        return(p);
 }
 
 extern void 
-stringArrayDestructor(StringArray *stringList[])
+stringArray_destructor(StringArray *stringList[])
 {
-    for (int i = 0; stringList[i] != NULL; i++) free(stringList[i]);
+        for (int i = 0; stringList[i] != NULL; i++) free(stringList[i]);
 }
 
 extern void
-_mkBox(const char* string, const unsigned long stringLength, const unsigned char isCustomLength)
+mk_box(const char* string, const unsigned long stringLength, const unsigned char isCustomLength)
 {
-    static unsigned long boxLength; boxLength = stringLength + 9;
-    
-    static char *staticStringCopy; staticStringCopy = malloc(stringLength);
-    strlcpy(staticStringCopy, string, stringLength);
-    drawLine(P_TOP); 
-    
-    if (isCustomLength) printMultiLine((stringLength - 1), &staticStringCopy);
-    else printLine(&staticStringCopy); 
-    
-    drawLine(P_BOTTOM);
-    
-    free(staticStringCopy);
+        static unsigned long boxLength; boxLength = stringLength + 9;
+
+        static char *staticStringCopy; staticStringCopy = malloc(stringLength);
+        strlcpy(staticStringCopy, string, stringLength);
+        draw_line(P_TOP); 
+
+        if (isCustomLength) print_multi_line((stringLength - 1), &staticStringCopy);
+        else print_line(&staticStringCopy); 
+
+        draw_line(P_BOTTOM);
+
+        free(staticStringCopy);
 }
 
 extern void
-_multilineBox(StringArray *stringList[])
+multiline_box(StringArray *stringList[])
 {
-    unsigned long boxLength; 
-    unsigned long lineLength; 
-    
-    size_t k = 0; while (stringList[k] != NULL) k++;
-    
-    lineLength = longestString(k, stringList); 
-    boxLength = lineLength + 10;
-    
-    drawLine(P_TOP); 
-    
-    for (size_t i = 0; i < k; i++) printMultiLine(lineLength, &stringList[i]->string); 
-    
-    drawLine(P_BOTTOM);
+        if (stringList != NULL)
+        {
+                unsigned long boxLength = 0;
+                unsigned long lineLength = 0;
+
+                size_t k = 0; while (stringList[k] != NULL) k++;
+
+
+                if (k) lineLength = longest_string(k, stringList);
+                else lineLength = 0;
+                boxLength = lineLength + 10;
+
+                draw_line(P_TOP);
+
+                for (size_t i = 0; i < k; i++) print_multi_line(lineLength, &stringList[i]->string);
+
+                draw_line(P_BOTTOM);
+        }
+        else return;
 }
 
 extern void
-drawHorizontalLine(const unsigned int length)
+draw_horizontal_line(const unsigned int length)
 {
-    for (unsigned int i = 0; i < length; i++) printf(P_BOX_HORIZONTAL_LINE);
-    puts("");
+        for (unsigned int i = 0; i < length; i++) printf(P_BOX_HORIZONTAL_LINE);
+        puts("");
 }

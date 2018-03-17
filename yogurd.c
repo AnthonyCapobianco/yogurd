@@ -33,6 +33,7 @@ main(void)
                 , newDrug("Dafalgan", mg(500, 1000))
                 , newDrug("DXM", mg(50, 100, 150, 200, 250))
                 , newDrug("chlorphenamine", ng(3400))
+                , newDrug("Weed", mg(125, 250, 500))
                 );
         
         return EXIT_FAILURE;

@@ -36,10 +36,22 @@
  */
 #define DRUGIO_DATE_FORMAT "%d-%m-%Y"
 
-#define DRUGIO_DB_FILE_RELATIVE_PATH "yogurd/logs/logs.db"
-
 #ifndef DRUGIO_DEBUG
 #define DRUGIO_DEBUG 0
+#endif
+
+#if DRUGIO_DEBUG == 1
+#define DRUGIO_DB_FILE_RELATIVE_PATH "yogurd/logs/debug.db"
+#else
+#define DRUGIO_DB_FILE_RELATIVE_PATH "yogurd/logs/logs.db"
+#endif
+
+#ifndef UINT_MIN
+#define UINT_MIN 0
+#endif
+
+#ifndef UINT_MAX
+#define UINT_MAX +4294967295
 #endif
 
 #define DRUGIO_ERR(x) fprintf(stderr, x)
@@ -51,7 +63,9 @@
 
 #define ng(...) (int[]) {__VA_ARGS__, 0}, true
 
-#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL}; do_fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drugList); free_Drug_array(drugList)
+#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL};                           \
+        do_fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drugList);      \
+        free_Drug_array(drugList)                                                       \
 
 /* Type Drug of type struct */
 typedef struct _Drug

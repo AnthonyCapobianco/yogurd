@@ -43,23 +43,22 @@ typedef struct A
 } StringArray;
 
 /* Functions prototypes */
-extern void _mkBox(const char* string, const unsigned long stringLength, const unsigned char isCustomLength);
-extern void drawHorizontalLine(const unsigned int length);
+extern void mk_box(const char* string, const unsigned long stringLength, const unsigned char isCustomLength);
+extern void draw_horizontal_line(const unsigned int length);
 
-#define mkBox(x) _mkBox(x, (strlen(x) + 1), 0)
-#define makeBox(x) mkBox(x)
-#define mkLargerBox(string, length) _mkBox(string, (length - (strlen(string) - 1)), 1)
+#define make_box(x) mk_box(x, (strlen(x) + 1), 0)
+#define mk_larger_box(string, length) mk_box(string, (length - (strlen(string) - 1)), 1)
 
 #ifndef stringList
 #define stringList(...) StringArray* stringList[] = {__VA_ARGS__, NULL}
 #endif
 
-extern StringArray* newLine(char *string);
+extern StringArray* new_line(char *string);
 
-extern void _multilineBox(StringArray *stringList[]);
-extern void stringArrayDestructor(StringArray *stringList[]);
+extern void multiline_box(StringArray *stringList[]);
+extern void stringArray_destructor(StringArray *stringList[]);
 
-#define multilineBox(...) stringList(__VA_ARGS__); _multilineBox(stringList); stringArrayDestructor(stringList)
+#define multilineBox(...) stringList(__VA_ARGS__); multiline_box(stringList); mk_larger_box(stringList)
 
 
 #endif
