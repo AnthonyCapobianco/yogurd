@@ -28,7 +28,7 @@
  * you'll need to find the value for the box sizing that works 
  * with your font (the one of the shell you use to run this)
  */
-#define BOX_SIZE 39
+#define BOX_SIZE 55
 /* Change the ORDER of those format parameters if 
  * you want the date to be displayed in a different manner.
  * Right now the order is day month year "%d-%m-%Y" 

@@ -26,8 +26,8 @@
 #include "drugio.h"
 
 /* Global variable for sqlite */
-char *zErrMsg = 0;
-const char* data = "Callback function called";
+static char *zErrMsg = 0;
+static const char* data = "Callback function called";
 static bool isFirstSqliteStatement = true;
 static sqlite3_int64 lastIdInTable = 1;
 static sqlite3_int64 numberOfRowsPrinted = 0;
@@ -200,14 +200,17 @@ show_logs(char* theTime, char* theDate)
 static void
 print_help_menu()
 {
-        printf("============================================================\n"
-               "Help menu:\n\n"
+        draw_horizontal_line(BOX_SIZE + 6);
+        
+        printf("Help menu:\n\n"
                "\tType \"exit\" or \"quit\" to exit the program\n"
                "\tType \"back\" to go back to the previous menu\n"
                "\tType \"logs <N>\" to show N log entries before today\n"
+               "\tType \"clear\" to clear the screen\n"
                "\tType \"help\" to show this menu\n\n"
-               "============================================================\n"
               );
+        
+        draw_horizontal_line(BOX_SIZE + 6);
 }
 
 /* if user typed logs get how many to print then pint them */
@@ -272,6 +275,11 @@ read_user_input(char* lastObj)
                         print_help_menu();
                         return -2;
                 }
+                if (!strncmp(c, "clear", 5) || !strncmp(c, "Clear", 5))
+                {
+                        system(CLEAR_SCREEN);
+                        return -2;
+                }
                 if (!strncmp(c, "logs", 4) || !strncmp(c, "Logs", 4))
                 {
                         get_limit_then_print_logs(c);
@@ -296,7 +304,6 @@ drugio_menu(Drug* drugList[])
         char ident;
         int i;
         int d;
-
 
 DRUGIO_MENU:
         i = 0; d = 0; ident = 'a';
@@ -386,7 +393,6 @@ do_fprintd(const char* dbPath, Drug* drugList[])
         if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
         else do
         {
-                
                 system(CLEAR_SCREEN);
                 
                 show_logs(theTime, theDate);

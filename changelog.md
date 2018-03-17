@@ -62,3 +62,7 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 
 * Fixed implicit conversion from uint to signed int 64... (Sorry about that)
 * Added system clear screen command (should work on dos shells and bash)
+
+# 1.1.1~b
+
+* Added "clear" command to clear screen at any given time. 
