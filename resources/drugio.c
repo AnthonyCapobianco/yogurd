@@ -38,7 +38,7 @@ static sqlite3 *dbPtr;
 extern Drug* 
 newDrug(char* dName, int* dDoses, bool isNG)
 {
-        Drug* p = malloc(sizeof(Drug));
+        Drug* p = malloc(sizeof(*p));
         
         if (p == NULL)
         {
@@ -89,7 +89,7 @@ format_date_to_string(short isFullFormat)
 static unsigned int
 parse_string_to_uint(char *buffer)
 {
-        static volatile long numberToCastToUint = 0;
+        static long numberToCastToUint = 0;
 
         char *endPtr;
 
@@ -217,13 +217,14 @@ print_help_menu()
 static void
 get_limit_then_print_logs(char *string)
 {
-        unsigned char a = 0
-                    , b = 0
-                    ;
-
-        static char stringCopy[10];
+        static unsigned char a = 0;
+        static unsigned char b = 0;
         
-        while (a++ < strlen(string))
+        static char stringCopy[10];
+       
+        static size_t stringLength; stringLength = strlen(string);
+ 
+        while (a++ < stringLength)
         {
                 if (string[a] >= '0' && string[a] <= '9')
                 {
@@ -236,16 +237,10 @@ get_limit_then_print_logs(char *string)
         
         draw_horizontal_line(BOX_SIZE);
 
-        if (idLimit > 50)
-        {
-                idLimit = 50;
-                DRUGIO_ERR("ERROR: limited to 50. Printing 50 last log entries.\n");
-        }
-        else if (idLimit < 1)
-        {
-                idLimit = 1;
-                DRUGIO_ERR("ERROR: minimum 1 log entry. Printing last log entry.\n");
-        }
+        /* Silent error handling. We just want to keep this reasonable */
+        if (idLimit > 50) idLimit = 50;
+        else if (idLimit < 1) idLimit = 1;
+        
         print_logs_from_ID((sqlite3_int64) idLimit);
 
         draw_horizontal_line(BOX_SIZE);
@@ -256,17 +251,20 @@ static int
 read_user_input(char* lastObj)
 {
         char c[13];
+        char *ptr;
 
         printf("> ");
-        if (!fgets(c, 13, stdin))
+        if (fgets(c, 13, stdin) == NULL)
         {
+                *c = '\0';
                 DRUGIO_ERR(DRUGIO_EOF);
                 exit(EXIT_FAILURE);
         }
         else
         {
                 /* Remove the \n from fgets */
-                c[strlen(c) - 1] = 0;
+                ptr = strchr(c, '\n');
+                if (ptr) *ptr = '\0';
                 
                 if (!strncmp(c, "exit", 4) || !strncmp(c, "quit", 4)) return -1;
                 if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4)) return -2;
@@ -285,6 +283,7 @@ read_user_input(char* lastObj)
                         get_limit_then_print_logs(c);
                         return -2;
                 }
+                
                 if (c[0] >= 'a' && c[0] <= (*lastObj - 1)) return((int) (c[0] - 'a'));
                 else
                 {
@@ -372,8 +371,9 @@ does_user_want_to_run_again()
         char c[4];
 
         printf("Do you want to run this again? (Y/N): ");
-        if (!fgets(c, 4, stdin))
+        if (fgets(c, 4, stdin) == NULL)
         {
+                *c = '\0';
                 DRUGIO_ERR(DRUGIO_EOF);
                 exit(EXIT_FAILURE);
         }
