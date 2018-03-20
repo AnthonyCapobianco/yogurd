@@ -70,3 +70,8 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 # 1.1.1~c
 
 * Better error handling for fgets
+
+# 1.1.2
+
+* Added `rmlast` command to remove the last entry from the database. 
+

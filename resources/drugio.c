@@ -120,6 +120,7 @@ callback(void *NotUsed, int argc, char **argv, char **azColName)
         return 0;
 }
 
+/* Find last id in table and set variable for it */
 static int
 set_last_id(void *NotUsed, int argc, char **argv, char **azColName)
 {
@@ -206,6 +207,7 @@ print_help_menu()
                "\tType \"exit\" or \"quit\" to exit the program\n"
                "\tType \"back\" to go back to the previous menu\n"
                "\tType \"logs <N>\" to show N log entries before today\n"
+               "\tType \"rmlast\" to remove the last log entry\n"
                "\tType \"clear\" to clear the screen\n"
                "\tType \"help\" to show this menu\n\n"
               );
@@ -246,6 +248,39 @@ get_limit_then_print_logs(char *string)
         draw_horizontal_line(BOX_SIZE);
 }
 
+/* Remove last log entry*/
+static int
+rm_last_entry_callback(void *NotUsed, int argc, char **argv, char **azColName)
+{
+        printf("Are you sure you want to remove the last entry of %s at %s (Y/N): ", argv[3], argv[2]);
+        return 0;
+}
+
+static void
+rm_last_entry_from_database()
+{
+        char c[4];
+        
+        if ((logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);", rm_last_entry_callback, (void*) data, &zErrMsg)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        
+        if (fgets(c, 4, stdin) == NULL)
+        {
+                *c = '\0';
+                DRUGIO_ERR(DRUGIO_EOF);
+                exit(EXIT_FAILURE);
+        }
+        else if (c[0] == 'Y' || c[0] == 'y')
+        {
+                logDatabaseHandler = sqlite3_exec(dbPtr, "DELETE FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);", callback, (void*) data, &zErrMsg);
+                if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+                else puts("Succesfully removed last entry from logs");
+                
+                logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT MAX(ID) FROM logs;", set_last_id, (void*) data, &zErrMsg);
+                if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        }
+        else return;
+}
+
 /* Make Selection (read user input) */
 static int
 read_user_input(char* lastObj)
@@ -281,6 +316,11 @@ read_user_input(char* lastObj)
                 if (!strncmp(c, "logs", 4) || !strncmp(c, "Logs", 4))
                 {
                         get_limit_then_print_logs(c);
+                        return -2;
+                }
+                if (!strncmp(c, "rmlast", 6) || !strncmp(c, "rm", 2))
+                {
+                        rm_last_entry_from_database();
                         return -2;
                 }
                 
