@@ -14,12 +14,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
 #include <stdbool.h>
-#include <stdlib.h> /* Need it for NULL */
+#include <stdlib.h>
 
 #ifndef DRUGIO_H_INCLUDED
 #define DRUGIO_H_INCLUDED
@@ -27,12 +27,17 @@
 /* If the box above the logs (where the time appears) is scewed
  * you'll need to find the value for the box sizing that works 
  * with your font (the one of the shell you use to run this)
+ * 
+ * By the way this is an unsigned int so -1 will be 4294967295
+ * So maybe don't. 
  */
 #define BOX_SIZE 55
+
 /* Change the ORDER of those format parameters if 
  * you want the date to be displayed in a different manner.
  * Right now the order is day month year "%d-%m-%Y" 
- * If you wanted month day year you'd use "%m-%d-%Y"
+ *
+ * If you wanted MONTH DAY YEAR you'd use "%m-%d-%Y"
  */
 #define DRUGIO_DATE_FORMAT "%d-%m-%Y"
 
@@ -60,13 +65,19 @@
 #define SQLITE_NOT_OK(dbPtr) fprintf(stderr, "ERROR: SQLITE_ERR_MSG: %s\n", sqlite3_errmsg(dbPtr))
 
 #define mg(...) (int[]) {__VA_ARGS__, 0}, false
-
 #define ng(...) (int[]) {__VA_ARGS__, 0}, true
 
 #define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL};                           \
         do_fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drugList);      \
         free_Drug_array(drugList)                                                       \
 
+
+#define DRUGIO_IDENT_SWITCH(ident) 	switch (ident)						\
+									{									\
+										case 'z': ident = 'A'; break;	\
+										case 'Z': ident = '0'; break;	\
+										default: ident++; break;		\
+									}									\
 
 /* This is most likely right. May not be. */
 #if defined(_WIN32) || defined(_WIN64)

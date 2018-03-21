@@ -25,15 +25,6 @@
 #include "boxes.h"
 #include "drugio.h"
 
-/* Global variable for sqlite */
-static char *zErrMsg = 0;
-static const char* data = "Callback function called";
-static bool isFirstSqliteStatement = true;
-static sqlite3_int64 lastIdInTable = 1;
-static sqlite3_int64 numberOfRowsPrinted = 0;
-static int logDatabaseHandler;
-static sqlite3 *dbPtr;
-
 /* Struct constructor for type Drug pointer */
 extern Drug* 
 newDrug(char* dName, int* dDoses, bool isNG)
@@ -103,7 +94,38 @@ parse_string_to_uint(char *buffer)
         else return (unsigned int) numberToCastToUint;
 }
 
-/* Database integration */
+/* Get agreement from user */
+static bool
+does_user_agree()
+{
+        char c[4];
+
+        if (fgets(c, 4, stdin) == NULL)
+        {
+                *c = '\0';
+                DRUGIO_ERR(DRUGIO_EOF);
+                exit(EXIT_FAILURE);
+        }
+        else if (c[0] == 'Y' || c[0] == 'y') return true;
+        else return false;
+}
+
+
+/*************************************************************************/
+/*                        START OF DB INTEGRATION                        */
+/*************************************************************************/
+
+
+/* Global variable for sqlite */
+static char *zErrMsg = 0;
+static const char* data = "Callback function called";
+static bool isFirstSqliteStatement = true;
+static sqlite3_int64 lastIdInTable = 1;
+static sqlite3_int64 numberOfRowsPrinted = 0;
+static int logDatabaseHandler;
+static sqlite3 *dbPtr;
+
+/* Default callback function for sqlite3 */
 static int
 callback(void *NotUsed, int argc, char **argv, char **azColName)
 {
@@ -128,6 +150,12 @@ set_last_id(void *NotUsed, int argc, char **argv, char **azColName)
         return 0;
 }
 
+/* Print logs from a date */
+/* At the moment the date is always today. 
+ * That will change in the future 
+ *
+ * TO DO: print doses by user-defined date 
+ */
 static int
 print_logs_from_date(char *date)
 {
@@ -140,6 +168,7 @@ print_logs_from_date(char *date)
         return 0;
 }
 
+/* Print logs from an id */
 static int
 print_logs_from_ID(sqlite3_int64 limit)
 {
@@ -168,6 +197,7 @@ print_logs_from_ID(sqlite3_int64 limit)
         return 0;
 }
 
+/* Insert the drug, dose, date & time in the db */
 static int
 add_to_logs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime, char* drug, float dose)
 {
@@ -182,40 +212,7 @@ add_to_logs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime
         return 0;
 }
 
-/* Show today's log */
-static int
-show_logs(char* theTime, char* theDate)
-{
-        mk_larger_box(theTime, BOX_SIZE);
-
-        int ret = print_logs_from_date(theDate);
-
-        isFirstSqliteStatement = false;
-
-        draw_horizontal_line(BOX_SIZE + 6);
-
-        return ret;
-}
-
-/* Print help menu */
-static void
-print_help_menu()
-{
-        draw_horizontal_line(BOX_SIZE + 6);
-        
-        printf("Help menu:\n\n"
-               "\tType \"exit\" or \"quit\" to exit the program\n"
-               "\tType \"back\" to go back to the previous menu\n"
-               "\tType \"logs <N>\" to show N log entries before today\n"
-               "\tType \"rmlast\" to remove the last log entry\n"
-               "\tType \"clear\" to clear the screen\n"
-               "\tType \"help\" to show this menu\n\n"
-              );
-        
-        draw_horizontal_line(BOX_SIZE + 6);
-}
-
-/* if user typed logs get how many to print then pint them */
+/* if user typed logs get how many to print then print them */
 static void
 get_limit_then_print_logs(char *string)
 {
@@ -259,26 +256,45 @@ rm_last_entry_callback(void *NotUsed, int argc, char **argv, char **azColName)
 static void
 rm_last_entry_from_database()
 {
-        char c[4];
+        /* This calls the function just above this one aka `rm_last_entry_callback` */
+        logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);", rm_last_entry_callback, (void*) data, &zErrMsg);
+        if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
         
-        if ((logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);", rm_last_entry_callback, (void*) data, &zErrMsg)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
-        
-        if (fgets(c, 4, stdin) == NULL)
+        if (does_user_agree())
         {
-                *c = '\0';
-                DRUGIO_ERR(DRUGIO_EOF);
-                exit(EXIT_FAILURE);
-        }
-        else if (c[0] == 'Y' || c[0] == 'y')
-        {
+                /* This deletes the last entry */
                 logDatabaseHandler = sqlite3_exec(dbPtr, "DELETE FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);", callback, (void*) data, &zErrMsg);
+                
+                /* If sql error */
                 if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
                 else puts("Succesfully removed last entry from logs");
-                
-                logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT MAX(ID) FROM logs;", set_last_id, (void*) data, &zErrMsg);
-                if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+
         }
         else return;
+}
+
+
+/*************************************************************************/
+/*                          END OF DB INTEGRATION                        */
+/*************************************************************************/
+
+
+/* Print help menu */
+static void
+print_help_menu()
+{
+        draw_horizontal_line(BOX_SIZE + 6);
+        
+        printf( "Help menu:\n\n"
+                "\tType \"exit\" or \"quit\" to exit the program\n"
+                "\tType \"back\" to go back to the previous menu\n"
+                "\tType \"logs <N>\" to show N log entries before today\n"
+                "\tType \"rmlast\" to remove the last log entry\n"
+                "\tType \"clear\" to clear the screen\n"
+                "\tType \"help\" to show this menu\n\n"
+              );
+        
+        draw_horizontal_line(BOX_SIZE + 6);
 }
 
 /* Make Selection (read user input) */
@@ -288,7 +304,7 @@ read_user_input(char* lastObj)
         char c[13];
         char *ptr;
 
-        printf("> ");
+        printf("\n> ");
         if (fgets(c, 13, stdin) == NULL)
         {
                 *c = '\0';
@@ -344,8 +360,9 @@ drugio_menu(Drug* drugList[])
         int i;
         int d;
 
-DRUGIO_MENU:
-        i = 0; d = 0; ident = 'a';
+DRUGIO_MENU: 
+        
+        d = 0;
         while(d >= 0)
         {
                 printf("Please type the letter conresponding to the Drug taken\n"
@@ -353,10 +370,14 @@ DRUGIO_MENU:
                       );
 
                 /* Print Drug names */
-                for (; drugList[i] != NULL; ++i, ++ident) printf("[%c] %s\n", ident, drugList[i]->name);
+                for (i = 0, ident = 'a'; drugList[i] != NULL; ++i)
+                {
+                        printf("[%c] %s\n", ident, drugList[i]->name);
+                        
+                        DRUGIO_IDENT_SWITCH(ident)
+                }
 
                 d = read_user_input(&ident);
-                
 
                 if (d >= 0 && drugList[d] != NULL)
                 {
@@ -370,19 +391,19 @@ DRUGIO_MENU:
                                 printf("\nDoses for %s:\n\n", dPtr->name);
                                 
                                 /* Print the Drug doses */
-                                for (ident = 'a', i = 0; dPtr->doses[i] != 0 ; ++i, ++ident)
+                                for (ident = 'a', i = 0; dPtr->doses[i] != 0 ; ++i)
                                 {
                                         printf("[%c] ", ident);
                                         
                                         if (!dPtr->isNanoGram) printf("%d mg\n", dPtr->doses[i]);
                                         else printf("%-2g mg\n", (float) (dPtr->doses[i] / 1000.0f));
+                                        
+                                        DRUGIO_IDENT_SWITCH(ident)
                                 }
 
                                 d = read_user_input(&ident);
                         }
-                        break;
-                }
-                else break;
+                }/* if (d >= 0 && drugList[d] != NULL) */
         } /* while(d >= 0) */
 
         switch (d)
@@ -401,26 +422,32 @@ DRUGIO_MENU:
                 }
         }
         
-        return dip;
+        /* return DrugAndDoseToPrint (struct) */
+        return dip; 
+}
+
+/* Show today's log */
+static int
+show_logs(char* theTime, char* theDate)
+{
+        mk_larger_box(theTime, BOX_SIZE);
+
+        int ret = print_logs_from_date(theDate);
+
+        isFirstSqliteStatement = false;
+
+        draw_horizontal_line(BOX_SIZE + 6);
+
+        return ret;
 }
 
 /* Ask to run again */
 static bool
 does_user_want_to_run_again()
 {
-        char c[4];
-
         printf("Do you want to run this again? (Y/N): ");
-        if (fgets(c, 4, stdin) == NULL)
-        {
-                *c = '\0';
-                DRUGIO_ERR(DRUGIO_EOF);
-                exit(EXIT_FAILURE);
-        }
-        else if (c[0] == 'Y' || c[0] == 'y') return true;
-        else return false;
+        return does_user_agree();
 }
-
 /* Print the end result */
 extern void
 do_fprintd(const char* dbPath, Drug* drugList[])

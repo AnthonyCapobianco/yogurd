@@ -75,3 +75,8 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 
 * Added `rmlast` command to remove the last entry from the database. 
 
+# 1.1.2~a
+
+* Small changes to the headers... Made them prettier. 
+* `does_user_agree()` is a new function to avoid redundancy in the code.
+
