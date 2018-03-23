@@ -64,6 +64,8 @@
 #define DRUGIO_OOR "ERROR: The character you entered is not part of the selection\n"
 #define SQLITE_NOT_OK(dbPtr) fprintf(stderr, "ERROR: SQLITE_ERR_MSG: %s\n", sqlite3_errmsg(dbPtr))
 
+#define DB_EXEC_CALLBACK dbPtr, sqlStatement, callback, (void*) data, &zErrMsg
+
 #define mg(...) (int[]) {__VA_ARGS__, 0}, false
 #define ng(...) (int[]) {__VA_ARGS__, 0}, true
 
@@ -72,12 +74,12 @@
         free_Drug_array(drugList)                                                       \
 
 
-#define DRUGIO_IDENT_SWITCH(ident) 	switch (ident)						\
-									{									\
-										case 'z': ident = 'A'; break;	\
-										case 'Z': ident = '0'; break;	\
-										default: ident++; break;		\
-									}									\
+#define DRUGIO_IDENT_SWITCH(ident) 	switch (ident)					\
+					{						\
+						case 'z': ident = 'A'; break;		\
+						case 'Z': ident = '0'; break;		\
+						default: ident++; break;		\
+					}						\
 
 /* This is most likely right. May not be. */
 #if defined(_WIN32) || defined(_WIN64)
@@ -88,23 +90,22 @@
 
 /* Type Drug of type struct */
 typedef struct _Drug
-{   char* name;
-    int* doses;
-    bool isNanoGram;
+{       char* name;
+        int* doses;
+        bool isNanoGram;
 } Drug;
 
 /* Type DrugAndDoseToPrint of type struct */
 typedef struct _DrugAndDoseToPrint
-{    float drugDose;
-     char* drugName;
-     bool promise;
+{       float drugDose;
+        char* drugName;
+        bool promise;
 } DrugAndDoseToPrint;
 
 /* Date and time strings */
 typedef struct _ParsedDateAndTime
-{
-    char theDate[11];
-    char theTime[6];
+{       char theDate[11];
+        char theTime[6];
 } ParsedDateAndTime;
 
 /* Functions prototypes */

@@ -153,7 +153,7 @@ print_logs_from_date(char *date)
 {
         char *sqlStatement = sqlite3_mprintf("SELECT * FROM logs WHERE theDate is '%q'", date);
 
-        if ((logDatabaseHandler = sqlite3_exec(dbPtr, sqlStatement, callback, (void*) data, &zErrMsg)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if ((logDatabaseHandler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
 
         free(sqlStatement);
 
@@ -182,7 +182,7 @@ print_logs_from_ID(sqlite3_int64 limit)
 
         char *sqlStatement = sqlite3_mprintf("SELECT * FROM logs WHERE ID >= %lli LIMIT %lli;", idToStartFrom, limit);
 
-        if ((logDatabaseHandler = sqlite3_exec(dbPtr, sqlStatement, callback, (void*) data, &zErrMsg)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if ((logDatabaseHandler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
 
         free(sqlStatement);
 
@@ -197,7 +197,7 @@ add_to_logs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime
         
         char *sqlStatement = sqlite3_mprintf(preStatement, theDate, theTime, drug, dose);
 
-        if ((logDatabaseHandler = sqlite3_exec(dbPtr, sqlStatement, callback, (void*) data, &zErrMsg)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if ((logDatabaseHandler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
 
         free(sqlStatement);
 
@@ -248,14 +248,18 @@ rm_last_entry_callback(void *NotUsed, int argc, char **argv, char **azColName)
 static void
 rm_last_entry_from_database()
 {
+        #define SELECT_LAST_ENTRY dbPtr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
+        #define DELETE_LAST_ENTRY dbPtr, "DELETE FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
+        #define DB_OBJECTS (void*) data, &zErrMsg
+        
         /* This calls the function just above this one aka `rm_last_entry_callback` */
-        logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);", rm_last_entry_callback, (void*) data, &zErrMsg);
+        logDatabaseHandler = sqlite3_exec(SELECT_LAST_ENTRY, rm_last_entry_callback, DB_OBJECTS);
         if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
         
         if (does_user_agree())
         {
                 /* This deletes the last entry */
-                logDatabaseHandler = sqlite3_exec(dbPtr, "DELETE FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);", callback, (void*) data, &zErrMsg);
+                logDatabaseHandler = sqlite3_exec(DELETE_LAST_ENTRY, callback, DB_OBJECTS);
                 
                 /* If sql error */
                 if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
@@ -333,6 +337,7 @@ read_user_input(char* lastObj)
                 if (ptr) *ptr = '\0';
                 
                 if (!strncmp(c, "exit", 4) || !strncmp(c, "quit", 4)) return -1;
+                
                 if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4) 
                 || !strncmp(c, "clear", 5) || !strncmp(c, "cls", 3))
                 {
@@ -391,34 +396,32 @@ drugio_menu(Drug* drugList[])
 
                         d = read_user_input(&ident);
 
-                        if (d >= 0 && drugList[d] != NULL)
-                        {
-                                dPtr = drugList[d];
-                                dip.drugName = dPtr->name;
-
-                                /* Early out if only one dose for selected Drug */
-                                if (!dPtr->doses[1]) d = 0;
-                                else
-                                {
-                                        printf("\nDoses for %s:\n\n", dPtr->name);
+                        if (drugList[d] == NULL || d < 0) break;
                                         
-                                        /* Print the Drug doses */
-                                        for (ident = 'a', i = 0; dPtr->doses[i] != 0 ; ++i)
-                                        {
-                                                printf("[%c] ", ident);
-                                                
-                                                if (!dPtr->isNanoGram) printf("%d mg\n", dPtr->doses[i]);
-                                                else printf("%-2g mg\n", (float) (dPtr->doses[i] / 1000.0f));
-                                                
-                                                DRUGIO_IDENT_SWITCH(ident)
-                                        }
+                        dPtr = drugList[d];
+                        dip.drugName = dPtr->name;
 
-                                        d = read_user_input(&ident);
+                        /* Early out if only one dose for selected Drug */
+                        if (!dPtr->doses[1]) d = 0;
+                        else
+                        {
+                                printf("\nDoses for %s:\n\n", dPtr->name);
+                
+                                /* Print the Drug doses */
+                                for (ident = 'a', i = 0; dPtr->doses[i] != 0 ; ++i)
+                                {
+                                        printf("[%c] ", ident);
+                                        
+                                        if (!dPtr->isNanoGram) printf("%d mg\n", dPtr->doses[i]);
+                                        else printf("%-2g mg\n", (float) (dPtr->doses[i] / 1000.0f));
+                                                
+                                        DRUGIO_IDENT_SWITCH(ident)
                                 }
                                 
-                                break;
-                        }/* if (d >= 0 && drugList[d] != NULL) */
-                }
+                                d = read_user_input(&ident);
+                        }
+                        break;
+                } /* while (d >= 0) */
 
                 switch (d)
                 {
@@ -432,7 +435,7 @@ drugio_menu(Drug* drugList[])
                                 return dip;
                         }
                 }
-        }
+        } /* for (int i = 0, d = 0; ; d = 0) */
 }
 
 /* Ask to run again */

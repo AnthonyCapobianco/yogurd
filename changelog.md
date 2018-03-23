@@ -93,3 +93,7 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 * Changed the clear and back commands behaviour.
 * Added time struct
 
+# 1.1.2~e
+
+* Restructured code
+
