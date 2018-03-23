@@ -83,7 +83,7 @@
 #if defined(_WIN32) || defined(_WIN64)
     #define CLEAR_SCREEN() system("cls")
 #else
-    #define CLEAR_SCREEN() printf("\x1B[3J")
+    #define CLEAR_SCREEN() printf("\x1B[2J")
 #endif
 
 /* Type Drug of type struct */
