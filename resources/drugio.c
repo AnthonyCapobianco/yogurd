@@ -355,70 +355,68 @@ drugio_menu(Drug* drugList[])
 {
         Drug *dPtr = NULL;
         DrugAndDoseToPrint dip; dip.promise = true;
-
-        char ident;
-        int i;
-        int d;
-
-DRUGIO_MENU: 
+          
+        char ident = 'a';
         
-        d = 0;
-        while(d >= 0)
+        for (int i = 0, d = 0; ; d = 0)
         {
-                printf("Please type the letter conresponding to the Drug taken\n"
-                       "then press the enter key. Type \"help\" for help.\n\n"
-                      );
-
-                /* Print Drug names */
-                for (i = 0, ident = 'a'; drugList[i] != NULL; ++i)
+                while(d >= 0)
                 {
-                        printf("[%c] %s\n", ident, drugList[i]->name);
-                        
-                        DRUGIO_IDENT_SWITCH(ident)
+                        printf("Please type the letter conresponding to the Drug taken\n"
+                               "then press the enter key. Type \"help\" for help.\n\n"
+                              );
+
+                        /* Print Drug names */
+                        for (i = 0, ident = 'a'; drugList[i] != NULL; ++i)
+                        {
+                                printf("[%c] %s\n", ident, drugList[i]->name);
+                                
+                                DRUGIO_IDENT_SWITCH(ident)
+                        }
+
+                        d = read_user_input(&ident);
+
+                        if (d >= 0 && drugList[d] != NULL)
+                        {
+                                dPtr = drugList[d];
+                                dip.drugName = dPtr->name;
+
+                                /* Early out if only one dose for selected Drug */
+                                if (!dPtr->doses[1]) d = 0;
+                                else
+                                {
+                                        printf("\nDoses for %s:\n\n", dPtr->name);
+                                        
+                                        /* Print the Drug doses */
+                                        for (ident = 'a', i = 0; dPtr->doses[i] != 0 ; ++i)
+                                        {
+                                                printf("[%c] ", ident);
+                                                
+                                                if (!dPtr->isNanoGram) printf("%d mg\n", dPtr->doses[i]);
+                                                else printf("%-2g mg\n", (float) (dPtr->doses[i] / 1000.0f));
+                                                
+                                                DRUGIO_IDENT_SWITCH(ident)
+                                        }
+
+                                        d = read_user_input(&ident);
+                                }
+                        }/* if (d >= 0 && drugList[d] != NULL) */
                 }
 
-                d = read_user_input(&ident);
-
-                if (d >= 0 && drugList[d] != NULL)
+                switch (d)
                 {
-                        dPtr = drugList[d];
-                        dip.drugName = dPtr->name;
-
-                        /* Early out if only one dose for selected Drug */
-                        if (!dPtr->doses[1]) d = 0;
-                        else
+                        case -2: continue;
+                        case -1: dip.promise = false; return dip;
+                        default:
                         {
-                                printf("\nDoses for %s:\n\n", dPtr->name);
-                                
-                                /* Print the Drug doses */
-                                for (ident = 'a', i = 0; dPtr->doses[i] != 0 ; ++i)
+                                if (dPtr == NULL) continue;
+                                else
                                 {
-                                        printf("[%c] ", ident);
-                                        
-                                        if (!dPtr->isNanoGram) printf("%d mg\n", dPtr->doses[i]);
-                                        else printf("%-2g mg\n", (float) (dPtr->doses[i] / 1000.0f));
-                                        
-                                        DRUGIO_IDENT_SWITCH(ident)
+                                        if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
+                                        else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
                                 }
-
-                                d = read_user_input(&ident);
+                                break;
                         }
-                }/* if (d >= 0 && drugList[d] != NULL) */
-        } /* while(d >= 0) */
-
-        switch (d)
-        {
-                case -2: goto DRUGIO_MENU;
-                case -1: dip.promise = false; break;
-                default:
-                {
-                        if (dPtr == NULL) goto DRUGIO_MENU;
-                        else
-                        {
-                                if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
-                                else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
-                        }
-                        break;
                 }
         }
         

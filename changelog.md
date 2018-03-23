@@ -80,3 +80,7 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 * Small changes to the headers... Made them prettier. 
 * `does_user_agree()` is a new function to avoid redundancy in the code.
 
+# 1.1.2~b
+
+* Removal of the goto statement for the menu. 
+
