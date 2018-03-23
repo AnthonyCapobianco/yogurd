@@ -54,26 +54,18 @@ free_Drug_array(Drug* drugList[])
 }
 
 /* Date parsing and formatting */
-static char*
-format_date_to_string(short isFullFormat)
+static ParsedDateAndTime tStruct;
+
+static void
+refresh_time_struct()
 {
         size_t strftime(char *, size_t, const char *, const struct tm *);
 
         time_t rawTimeNow; time(&rawTimeNow);
         struct tm *timeNow; timeNow = localtime(&rawTimeNow);
 
-        static char fullDate[11]
-                  , fullTime[6]
-                  ;
-
-        switch (isFullFormat)
-        {
-            default:
-            case 0: strftime(fullTime, 6, "%H:%M", timeNow);
-                    return fullTime;
-            case 1: strftime(fullDate, 11, DRUGIO_DATE_FORMAT, timeNow);
-                    return fullDate;
-        }
+        strftime(tStruct.theTime, 6, "%H:%M", timeNow);
+        strftime(tStruct.theDate, 11, DRUGIO_DATE_FORMAT, timeNow);
 }
 
 /* parse string to uint */
@@ -278,6 +270,29 @@ rm_last_entry_from_database()
 /*                          END OF DB INTEGRATION                        */
 /*************************************************************************/
 
+/* Show today's log */
+static int
+show_logs()
+{
+        mk_larger_box(tStruct.theTime, BOX_SIZE);
+
+        int ret = print_logs_from_date(tStruct.theDate);
+
+        isFirstSqliteStatement = false;
+
+        draw_horizontal_line(BOX_SIZE + 6);
+
+        return ret;
+}
+
+/* Clear screen and print everything again. */
+static void
+refresh_screen()
+{
+        CLEAR_SCREEN();
+        refresh_time_struct();
+        show_logs();
+}
 
 /* Print help menu */
 static void
@@ -318,15 +333,15 @@ read_user_input(char* lastObj)
                 if (ptr) *ptr = '\0';
                 
                 if (!strncmp(c, "exit", 4) || !strncmp(c, "quit", 4)) return -1;
-                if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4)) return -2;
+                if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4) 
+                || !strncmp(c, "clear", 5) || !strncmp(c, "cls", 3))
+                {
+                        refresh_screen();
+                        return -2;
+                }
                 if (!strncmp(c, "help", 4) || !strncmp(c, "Help", 4))
                 {
                         print_help_menu();
-                        return -2;
-                }
-                if (!strncmp(c, "clear", 5) || !strncmp(c, "Clear", 5))
-                {
-                        system(CLEAR_SCREEN);
                         return -2;
                 }
                 if (!strncmp(c, "logs", 4) || !strncmp(c, "Logs", 4))
@@ -400,6 +415,7 @@ drugio_menu(Drug* drugList[])
 
                                         d = read_user_input(&ident);
                                 }
+                                
                                 break;
                         }/* if (d >= 0 && drugList[d] != NULL) */
                 }
@@ -411,30 +427,12 @@ drugio_menu(Drug* drugList[])
                         default:
                         {
                                 if (dPtr == NULL) continue;
-                                else
-                                {
-                                        if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
-                                        else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
-                                        return dip;
-                                }
+                                else if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
+                                else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
+                                return dip;
                         }
                 }
         }
-}
-
-/* Show today's log */
-static int
-show_logs(char* theTime, char* theDate)
-{
-        mk_larger_box(theTime, BOX_SIZE);
-
-        int ret = print_logs_from_date(theDate);
-
-        isFirstSqliteStatement = false;
-
-        draw_horizontal_line(BOX_SIZE + 6);
-
-        return ret;
 }
 
 /* Ask to run again */
@@ -444,26 +442,22 @@ does_user_want_to_run_again()
         printf("Do you want to run this again? (Y/N): ");
         return does_user_agree();
 }
+
 /* Print the end result */
 extern void
 do_fprintd(const char* dbPath, Drug* drugList[])
 {
-        char *theDate = format_date_to_string(1);
-        char *theTime = format_date_to_string(0);
-
         logDatabaseHandler = sqlite3_open(dbPath, &dbPtr);
 
         if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
         else do
         {
-                system(CLEAR_SCREEN);
-                
-                show_logs(theTime, theDate);
+                refresh_screen();
 
                 DrugAndDoseToPrint dip = drugio_menu(drugList);
 
                 if (!dip.promise) break;
-                else add_to_logs(dbPtr, logDatabaseHandler, theDate, theTime, dip.drugName, dip.drugDose);
+                else add_to_logs(dbPtr, logDatabaseHandler, tStruct.theDate, tStruct.theTime, dip.drugName, dip.drugDose);
 
         } while (does_user_want_to_run_again());
 

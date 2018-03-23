@@ -81,11 +81,9 @@
 
 /* This is most likely right. May not be. */
 #if defined(_WIN32) || defined(_WIN64)
-    #define CLEAR_SCREEN "cls"
-#elif defined(__CYGWIN__) && !defined(_WIN32)
-    #define CLEAR_SCREEN "clear"
-#elif defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-    #define CLEAR_SCREEN "clear"
+    #define CLEAR_SCREEN() system("cls")
+#else
+    #define CLEAR_SCREEN() printf("\x1B[3J")
 #endif
 
 /* Type Drug of type struct */
@@ -101,6 +99,13 @@ typedef struct _DrugAndDoseToPrint
      char* drugName;
      bool promise;
 } DrugAndDoseToPrint;
+
+/* Date and time strings */
+typedef struct _ParsedDateAndTime
+{
+    char theDate[11];
+    char theTime[6];
+} ParsedDateAndTime;
 
 /* Functions prototypes */
 extern Drug* newDrug(char*, int*, bool);
