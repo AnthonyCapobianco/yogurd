@@ -17,6 +17,7 @@
  *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
  */
+#define DRUGIO_DEBUG 1
 #define DRUGIO_FOLDER_LOCATION "/Users/Muddy/Desktop/"
 #include "resources/drugio.h"
 

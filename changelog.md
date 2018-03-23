@@ -84,3 +84,6 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 
 * Removal of the goto statement for the menu. 
 
+# 1.1.2~c
+
+* Fixed semantic issue in `drugio_menu()` where the break statement and return statement were wrong after last update. 

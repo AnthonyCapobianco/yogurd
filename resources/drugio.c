@@ -400,6 +400,7 @@ drugio_menu(Drug* drugList[])
 
                                         d = read_user_input(&ident);
                                 }
+                                break;
                         }/* if (d >= 0 && drugList[d] != NULL) */
                 }
 
@@ -414,14 +415,11 @@ drugio_menu(Drug* drugList[])
                                 {
                                         if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
                                         else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
+                                        return dip;
                                 }
-                                break;
                         }
                 }
         }
-        
-        /* return DrugAndDoseToPrint (struct) */
-        return dip; 
 }
 
 /* Show today's log */
