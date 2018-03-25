@@ -97,3 +97,8 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 
 * Restructured code
 
+# 1.1.3
+
+* Code optimisation. 
+* Escape sequence "colors" (black and white)
+

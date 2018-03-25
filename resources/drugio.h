@@ -24,14 +24,7 @@
 #ifndef DRUGIO_H_INCLUDED
 #define DRUGIO_H_INCLUDED
 
-/* If the box above the logs (where the time appears) is scewed
- * you'll need to find the value for the box sizing that works 
- * with your font (the one of the shell you use to run this)
- * 
- * By the way this is an unsigned int so -1 will be 4294967295
- * So maybe don't. 
- */
-#define BOX_SIZE 55
+#define BOLD_LINE "════════════════════════════════════════════════════════"
 
 /* Change the ORDER of those format parameters if 
  * you want the date to be displayed in a different manner.
@@ -60,8 +53,8 @@
 #endif
 
 #define DRUGIO_ERR(x) fprintf(stderr, x)
-#define DRUGIO_EOF "ERROR: Your choice isn't correct\n"
 #define DRUGIO_OOR "ERROR: The character you entered is not part of the selection\n"
+#define DRUGIO_RET_NULL(x) fprintf(stderr, "ERROR: %s returned NULL in file '%s' at line: %i.", x, __FILE__, __LINE__)
 #define SQLITE_NOT_OK(dbPtr) fprintf(stderr, "ERROR: SQLITE_ERR_MSG: %s\n", sqlite3_errmsg(dbPtr))
 
 #define DB_EXEC_CALLBACK dbPtr, sqlStatement, callback, (void*) data, &zErrMsg
@@ -69,23 +62,28 @@
 #define mg(...) (int[]) {__VA_ARGS__, 0}, false
 #define ng(...) (int[]) {__VA_ARGS__, 0}, true
 
-#define drugList(...) Drug* drugList[] = {__VA_ARGS__, NULL};                           \
+#define drugList(...)									\
+											\
+	Drug* drugList[] = {__VA_ARGS__, NULL};                           		\
         do_fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drugList);      \
         free_Drug_array(drugList)                                                       \
 
-
-#define DRUGIO_IDENT_SWITCH(ident) 	switch (ident)					\
-					{						\
-						case 'z': ident = 'A'; break;		\
-						case 'Z': ident = '0'; break;		\
-						default: ident++; break;		\
-					}						\
+#define DRUGIO_IDENT_SWITCH(ident)			\
+							\
+	switch (ident)					\
+	{						\
+		case 'z': ident = 'A'; break;		\
+		case 'Z': ident = '0'; break;		\
+		default: ident++; break;		\
+	}						\
 
 /* This is most likely right. May not be. */
 #if defined(_WIN32) || defined(_WIN64)
-    #define CLEAR_SCREEN() system("cls")
+	#define CLEAR_SCREEN() system("cls")
+        #define COLOR_RESET "\x1b[0;37m"
 #else
-    #define CLEAR_SCREEN() printf("\x1B[2J")
+	#define CLEAR_SCREEN() printf("\x1B[2J")
+        #define COLOR_RESET "\x1b[0;97m"
 #endif
 
 /* Type Drug of type struct */
@@ -110,7 +108,7 @@ typedef struct _ParsedDateAndTime
 
 /* Functions prototypes */
 extern Drug* newDrug(char*, int*, bool);
-extern void do_fprintd(const char*, Drug* drugList[]);
-extern void free_Drug_array(Drug* drugList[]);
+extern void do_fprintd(const char*, Drug* []);
+extern void free_Drug_array(Drug* []);
 
 #endif

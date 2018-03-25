@@ -22,18 +22,17 @@
 #include <string.h>
 #include <time.h>
 #include <sqlite3.h>
-#include "boxes.h"
 #include "drugio.h"
 
 /* Struct constructor for type Drug pointer */
 extern Drug* 
 newDrug(char* dName, int* dDoses, bool isNG)
 {
-        Drug* p = malloc(sizeof(*p));
+        Drug *p = malloc(sizeof(*p));
         
         if (p == NULL)
         {
-                DRUGIO_ERR("ERROR: malloc failed.");
+                DRUGIO_RET_NULL("malloc");
                 exit(EXIT_FAILURE);
         }
         
@@ -57,7 +56,7 @@ free_Drug_array(Drug* drugList[])
 static ParsedDateAndTime tStruct;
 
 static void
-refresh_time_struct()
+refresh_time_struct(void)
 {
         size_t strftime(char *, size_t, const char *, const struct tm *);
 
@@ -80,7 +79,7 @@ parse_string_to_uint(char *buffer)
 
         if (numberToCastToUint > UINT_MAX || numberToCastToUint < UINT_MIN)
         {
-                DRUGIO_ERR("ERROR #00: NUMBER TOO BIG TO BE AN UNSIGNED INT");
+                DRUGIO_ERR("ERROR #00: number too big to be an unsigned int");
                 exit(EXIT_FAILURE);
         }
         else return (unsigned int) numberToCastToUint;
@@ -88,14 +87,14 @@ parse_string_to_uint(char *buffer)
 
 /* Get agreement from user */
 static bool
-does_user_agree()
+does_user_agree(void)
 {
         char c[4];
 
         if (fgets(c, 4, stdin) == NULL)
         {
                 *c = '\0';
-                DRUGIO_ERR(DRUGIO_EOF);
+                DRUGIO_RET_NULL("fgets");
                 exit(EXIT_FAILURE);
         }
         else if (c[0] == 'Y' || c[0] == 'y') return true;
@@ -121,16 +120,18 @@ static sqlite3 *dbPtr;
 static int
 callback(void *NotUsed, int argc, char **argv, char **azColName)
 {
-
+        static short i = 0; i++;
         char *endPtr;
         /* Must be a boat otherwise it sinks */
         float doseBoat = strtof(argv[4], &endPtr);
 
-        if (argc)
-        {
-                printf("[%s - %s] %s %-2g mg\n", argv[1], argv[2], argv[3], doseBoat);
-                if (isFirstSqliteStatement) numberOfRowsPrinted++;
-        }
+        if (i & 1) printf("\x1b[40m");
+        
+        if (!strncmp(argv[1], tStruct.theDate, 6)) printf("[%s] %-10s %6g mg\t\t\t\t"COLOR_RESET"\n", argv[2], argv[3], doseBoat);
+        else printf("[%s - %s] %s\t%6g mg\t\t"COLOR_RESET"\n", argv[1], argv[2], argv[3], doseBoat);
+                
+        if (isFirstSqliteStatement) numberOfRowsPrinted++;
+        
         return 0;
 }
 
@@ -226,7 +227,7 @@ get_limit_then_print_logs(char *string)
         
         static unsigned int idLimit; idLimit = parse_string_to_uint(stringCopy);
         
-        draw_horizontal_line(BOX_SIZE);
+        puts(BOLD_LINE);
 
         /* Silent error handling. We just want to keep this reasonable */
         if (idLimit > 50) idLimit = 50;
@@ -234,7 +235,7 @@ get_limit_then_print_logs(char *string)
         
         print_logs_from_ID((sqlite3_int64) idLimit);
 
-        draw_horizontal_line(BOX_SIZE);
+        puts(BOLD_LINE);
 }
 
 /* Remove last log entry*/
@@ -246,7 +247,7 @@ rm_last_entry_callback(void *NotUsed, int argc, char **argv, char **azColName)
 }
 
 static void
-rm_last_entry_from_database()
+rm_last_entry_from_database(void)
 {
         #define SELECT_LAST_ENTRY dbPtr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
         #define DELETE_LAST_ENTRY dbPtr, "DELETE FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
@@ -275,34 +276,34 @@ rm_last_entry_from_database()
 /*************************************************************************/
 
 /* Show today's log */
-static int
-show_logs()
+static void
+show_logs(void)
 {
-        mk_larger_box(tStruct.theTime, BOX_SIZE);
+        printf("\n\n %s\n", tStruct.theTime);
+        puts(BOLD_LINE);
 
-        int ret = print_logs_from_date(tStruct.theDate);
+        print_logs_from_date(tStruct.theDate);
 
         isFirstSqliteStatement = false;
 
-        draw_horizontal_line(BOX_SIZE + 6);
-
-        return ret;
+        puts(BOLD_LINE);
 }
 
 /* Clear screen and print everything again. */
 static void
-refresh_screen()
+refresh_screen(void)
 {
         CLEAR_SCREEN();
         refresh_time_struct();
+        printf(COLOR_RESET);
         show_logs();
 }
 
 /* Print help menu */
 static void
-print_help_menu()
+print_help_menu(void)
 {
-        draw_horizontal_line(BOX_SIZE + 6);
+        puts("\n\n"BOLD_LINE);
         
         printf( "Help menu:\n\n"
                 "\tType \"exit\" or \"quit\" to exit the program\n"
@@ -313,7 +314,7 @@ print_help_menu()
                 "\tType \"help\" to show this menu\n\n"
               );
         
-        draw_horizontal_line(BOX_SIZE + 6);
+        puts(BOLD_LINE);
 }
 
 /* Make Selection (read user input) */
@@ -327,45 +328,51 @@ read_user_input(char* lastObj)
         if (fgets(c, 13, stdin) == NULL)
         {
                 *c = '\0';
-                DRUGIO_ERR(DRUGIO_EOF);
+                DRUGIO_RET_NULL("fgets");
                 exit(EXIT_FAILURE);
         }
         else
         {
                 /* Remove the \n from fgets */
-                ptr = strchr(c, '\n');
-                if (ptr) *ptr = '\0';
+                if ((ptr = strchr(c, '\n')) != NULL) *ptr = '\0';
                 
-                if (!strncmp(c, "exit", 4) || !strncmp(c, "quit", 4)) return -1;
+                if (c[1])
+                {
+                        if (c[0] >= 'e')
+                        {
+                                if (c[0] == 'e' && !strncmp(c, "exit", 4)) return -1;
+                                if (c[0] == 'q' && !strncmp(c, "quit", 4)) return -1;
+                                
+                                if (!strncmp(c, "help", 4))
+                                {
+                                        print_help_menu();
+                                        return -2;
+                                }
+                                if (!strncmp(c, "logs", 4))
+                                {
+                                        get_limit_then_print_logs(c);
+                                        return -2;
+                                }
+                                if (!strncmp(c, "rmlast", 6))
+                                {
+                                        rm_last_entry_from_database();
+                                        return -2;
+                                }
+                        }
+                        else if (c[0] < 'e')
+                        {
+                        
+                                if (!strncmp(c, "back", 4) || !strncmp(c, "cls", 3) || !strncmp(c, "clear", 5))
+                                {
+                                        refresh_screen();
+                                        return -2;
+                                }
+                        }
+                }
+                else if (c[0] >= 'a' && c[0] <= (*lastObj - 1)) return((int) (c[0] - 'a'));
+                else DRUGIO_ERR(DRUGIO_OOR); /* Error: out of range */
                 
-                if (!strncmp(c, "back", 4) || !strncmp(c, "Back", 4) 
-                || !strncmp(c, "clear", 5) || !strncmp(c, "cls", 3))
-                {
-                        refresh_screen();
-                        return -2;
-                }
-                if (!strncmp(c, "help", 4) || !strncmp(c, "Help", 4))
-                {
-                        print_help_menu();
-                        return -2;
-                }
-                if (!strncmp(c, "logs", 4) || !strncmp(c, "Logs", 4))
-                {
-                        get_limit_then_print_logs(c);
-                        return -2;
-                }
-                if (!strncmp(c, "rmlast", 6) || !strncmp(c, "rm", 2))
-                {
-                        rm_last_entry_from_database();
-                        return -2;
-                }
-                
-                if (c[0] >= 'a' && c[0] <= (*lastObj - 1)) return((int) (c[0] - 'a'));
-                else
-                {
-                        DRUGIO_ERR(DRUGIO_OOR); /* Error: out of range */
-                        return -2;
-                }
+                return -2;
         }
 }
 
@@ -380,7 +387,7 @@ drugio_menu(Drug* drugList[])
         
         for (int i = 0, d = 0; ; d = 0)
         {
-                while(d >= 0)
+                while (true)
                 {
                         printf("Please type the letter conresponding to the Drug taken\n"
                                "then press the enter key. Type \"help\" for help.\n\n"
@@ -396,7 +403,7 @@ drugio_menu(Drug* drugList[])
 
                         d = read_user_input(&ident);
 
-                        if (drugList[d] == NULL || d < 0) break;
+                        if (d < 0 || drugList[d] == NULL) break;
                                         
                         dPtr = drugList[d];
                         dip.drugName = dPtr->name;
@@ -440,7 +447,7 @@ drugio_menu(Drug* drugList[])
 
 /* Ask to run again */
 static bool
-does_user_want_to_run_again()
+does_user_want_to_run_again(void)
 {
         printf("Do you want to run this again? (Y/N): ");
         return does_user_agree();
