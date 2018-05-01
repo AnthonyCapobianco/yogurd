@@ -189,6 +189,21 @@ print_logs_from_ID(sqlite3_int64 limit)
         return 0;
 }
 
+/* Self explanatory */
+static int
+print_logs_from_name(char *name)
+{
+        static char *pre_statement = "SELECT * FROM logs WHERE name == '%q' LIMIT 10";
+        char *sql_statement = sqlite3_mprintf(pre_statement, name);
+        
+        if ((log_database_handler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
+
+        free(sql_statement);
+
+        return 0;
+
+}
+
 /* Insert the drug, dose, date & time in the db */
 static int
 add_to_logs(sqlite3 *db_ptr, int log_database_handler, char* the_date, char* the_time, char* drug, float dose)
@@ -316,6 +331,7 @@ print_help_menu(void)
                 "\tType \"exit\" or \"quit\" to exit the program\n"
                 "\tType \"back\" to go back to the previous menu\n"
                 "\tType \"logs <N>\" to show N log entries before today\n"
+                "\tType \"last\" to show logs for a specific medication\n"
                 "\tType \"rmlast\" to remove the last log entry\n"
                 "\tType \"clear\" to clear the screen\n"
                 "\tType \"help\" to show this menu\n\n"
@@ -359,6 +375,10 @@ read_user_input(char* last_obj)
                                 {
                                         get_limit_then_print_logs(c);
                                         return -2;
+                                }
+                                if (!strncmp(c, "last", 4))
+                                {
+                                        return -3;
                                 }
                                 if (!strncmp(c, "rmlast", 6))
                                 {
@@ -409,6 +429,22 @@ drugio_menu(Drug* drug_list[])
                         }
 
                         d = read_user_input(&ident);
+                        
+                        if (d == -3)
+                        {
+                                while (true)
+                                {
+                                        printf("Please insert the letter of the drug you want to see the logs for: ");
+                                
+                                        d = read_user_input(&ident);
+                                
+                                        if (drug_list[d] != NULL) break;
+                                        else continue;
+                                }
+                                
+                                print_logs_from_name(drug_list[d]->name);
+                                break;
+                        }
 
                         if (d < 0 || drug_list[d] == NULL) break;
                                         

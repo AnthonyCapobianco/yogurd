@@ -109,3 +109,7 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 # 1.1.4
 
 * Fixed logs function not working properly. 
+
+# 1.1.5
+
+* Get logs by drug name using `last`
