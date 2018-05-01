@@ -18,24 +18,27 @@
  *
  */
 
-#define DRUGIO_FOLDER_LOCATION "/Users/Muddy/Desktop/"
+#define DRUGIO_DEBUG 0
+
+#define DRUGIO_FOLDER_LOCATION "/Users/tony/Desktop/"
 #include "resources/drugio.h"
 
 int 
 main(void)
 {        
-        drugList( newDrug("Ritalin", mg(5, 10, 15, 20))
-                , newDrug("Concerta", mg(36, 72, 108))
-                , newDrug("Effexor", mg(225))
-                , newDrug("Xanax", ng(125, 250, 500, 1000, 1500, 2000))
-                , newDrug("Akton", mg(1, 2, 3, 4))
-                , newDrug("Zolpidem", mg(5, 10, 15))
-                , newDrug("Pantomed", mg(20, 40))
-                , newDrug("Dafalgan", mg(500, 1000))
-                , newDrug("DXM", mg(50, 100, 150, 200, 250))
-                , newDrug("chlorphenamine", ng(3400))
-                , newDrug("Weed", mg(125, 250, 500))
-                );
+        drug_list( new_drug("Ritalin", mg(5, 10, 15, 20))
+                 , new_drug("Concerta", mg(36, 72, 108))
+                 , new_drug("Effexor", mg(225))
+                 , new_drug("Xanax", ng(125, 250, 500, 1000, 1500, 2000))
+                 , new_drug("Akton", mg(1, 2, 3, 4))
+                 , new_drug("Zolpidem", ng(2500, 5000, 10000, 15000))
+                 , new_drug("Pantomed", mg(20, 40))
+                 , new_drug("Dafalgan", mg(500, 1000))
+                 , new_drug("DXM", mg(50, 100, 150, 200, 250))
+                 , new_drug("chlorphenamine", ng(3400))
+                 , new_drug("Ibuprofen", mg(200, 300, 400, 600))
+                 , new_drug("Weed", mg(125, 250, 500))
+                 );
         
         return EXIT_FAILURE;
 }

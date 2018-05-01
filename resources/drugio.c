@@ -26,7 +26,7 @@
 
 /* Struct constructor for type Drug pointer */
 extern Drug* 
-newDrug(char* dName, int* dDoses, bool isNG)
+new_drug(char* d_name, int* d_doses, bool is_nG)
 {
         Drug *p = malloc(sizeof(*p));
         
@@ -36,53 +36,53 @@ newDrug(char* dName, int* dDoses, bool isNG)
                 exit(EXIT_FAILURE);
         }
         
-        p->name = dName; 
-        p->doses = dDoses; 
-        p->isNanoGram = isNG;
+        p->name = d_name; 
+        p->doses = d_doses; 
+        p->is_nano_gram = is_nG;
         
         return p;
 }
 
 /* Struct destructor for drugs */
 extern void
-free_Drug_array(Drug* drugList[])
+free_Drug_array(Drug* drug_list[])
 {
-        for (int i = 0; drugList[i] != NULL; i++) free(*(drugList + i));
+        for (int i = 0; drug_list[i] != NULL; i++) free(*(drug_list + i));
         exit(EXIT_SUCCESS);
         
 }
 
 /* Date parsing and formatting */
-static ParsedDateAndTime tStruct;
+static Parsed_date_and_time t_struct;
 
 static void
 refresh_time_struct(void)
 {
         size_t strftime(char *, size_t, const char *, const struct tm *);
 
-        time_t rawTimeNow; time(&rawTimeNow);
-        struct tm *timeNow; timeNow = localtime(&rawTimeNow);
+        time_t raw_time_now; time(&raw_time_now);
+        struct tm *time_now; time_now = localtime(&raw_time_now);
 
-        strftime(tStruct.theTime, 6, "%H:%M", timeNow);
-        strftime(tStruct.theDate, 11, DRUGIO_DATE_FORMAT, timeNow);
+        strftime(t_struct.the_time, 6, "%H:%M", time_now);
+        strftime(t_struct.the_date, 11, DRUGIO_DATE_FORMAT, time_now);
 }
 
 /* parse string to uint */
 static unsigned int
 parse_string_to_uint(char *buffer)
 {
-        static long numberToCastToUint = 0;
+        static long number_to_cast_to_uint = 0;
 
-        char *endPtr;
+        char *end_ptr;
 
-        numberToCastToUint = strtol(buffer, &endPtr, 10);
+        number_to_cast_to_uint = strtol(buffer, &end_ptr, 10);
 
-        if (numberToCastToUint > UINT_MAX || numberToCastToUint < UINT_MIN)
+        if (number_to_cast_to_uint > UINT_MAX || number_to_cast_to_uint < UINT_MIN)
         {
                 DRUGIO_ERR("ERROR #00: number too big to be an unsigned int");
                 exit(EXIT_FAILURE);
         }
-        else return (unsigned int) numberToCastToUint;
+        else return (unsigned int) number_to_cast_to_uint;
 }
 
 /* Get agreement from user */
@@ -93,7 +93,6 @@ does_user_agree(void)
 
         if (fgets(c, 4, stdin) == NULL)
         {
-                *c = '\0';
                 DRUGIO_RET_NULL("fgets");
                 exit(EXIT_FAILURE);
         }
@@ -108,38 +107,38 @@ does_user_agree(void)
 
 
 /* Global variable for sqlite */
-static char *zErrMsg = 0;
+static char *z_err_msg = 0;
 static const char* data = "Callback function called";
-static bool isFirstSqliteStatement = true;
-static sqlite3_int64 lastIdInTable = 1;
-static sqlite3_int64 numberOfRowsPrinted = 0;
-static int logDatabaseHandler;
-static sqlite3 *dbPtr;
+static bool is_first_sqlite_statement = true;
+static sqlite3_int64 last_id_in_table = 1;
+static sqlite3_int64 number_of_rows_printed = 0;
+static int log_database_handler;
+static sqlite3 *db_ptr;
 
 /* Default callback function for sqlite3 */
 static int
-callback(void *NotUsed, int argc, char **argv, char **azColName)
+callback(void *Not_used, int argc, char **argv, char **az_col_name)
 {
         static short i = 0; i++;
-        char *endPtr;
+        char *end_ptr;
         /* Must be a boat otherwise it sinks */
-        float doseBoat = strtof(argv[4], &endPtr);
+        float dose_boat = strtof(argv[4], &end_ptr);
 
         if (i & 1) printf("\x1b[40m");
         
-        if (!strncmp(argv[1], tStruct.theDate, 6)) printf("[%s] %-10s %6g mg\t\t\t\t"COLOR_RESET"\n", argv[2], argv[3], doseBoat);
-        else printf("[%s - %s] %s\t%6g mg\t\t"COLOR_RESET"\n", argv[1], argv[2], argv[3], doseBoat);
+        if (!strncmp(argv[1], t_struct.the_date, 6)) printf("[%s] %-10s %6g mg\t\t\t\t"COLOR_RESET"\n", argv[2], argv[3], dose_boat);
+        else printf("[%s - %s] %s\t%6g mg\t\t"COLOR_RESET"\n", argv[1], argv[2], argv[3], dose_boat);
                 
-        if (isFirstSqliteStatement) numberOfRowsPrinted++;
+        if (is_first_sqlite_statement) number_of_rows_printed++;
         
         return 0;
 }
 
 /* Find last id in table and set variable for it */
 static int
-set_last_id(void *NotUsed, int argc, char **argv, char **azColName)
+set_last_id(void *Not_used, int argc, char **argv, char **az_col_name)
 {
-        lastIdInTable = parse_string_to_uint(argv[0]);
+        last_id_in_table = parse_string_to_uint(argv[0]);
         return 0;
 }
 
@@ -152,11 +151,11 @@ set_last_id(void *NotUsed, int argc, char **argv, char **azColName)
 static int
 print_logs_from_date(char *date)
 {
-        char *sqlStatement = sqlite3_mprintf("SELECT * FROM logs WHERE theDate is '%q'", date);
+        char *sql_statement = sqlite3_mprintf("SELECT * FROM logs WHERE theDate is '%q'", date);
 
-        if ((logDatabaseHandler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if ((log_database_handler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
 
-        free(sqlStatement);
+        free(sql_statement);
 
         return 0;
 }
@@ -165,42 +164,42 @@ print_logs_from_date(char *date)
 static int
 print_logs_from_ID(sqlite3_int64 limit)
 {
-        logDatabaseHandler = sqlite3_exec(dbPtr, "SELECT MAX(ID) FROM logs;", set_last_id, (void*) data, &zErrMsg);
+        log_database_handler = sqlite3_exec(db_ptr, "SELECT MAX(ID) FROM logs;", set_last_id, (void*) data, &z_err_msg);
 
-        if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if (log_database_handler != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
 
-        static sqlite3_int64 relativePosition;
-        static sqlite3_int64 idToStartFrom = 1;
+        static sqlite3_int64 relative_position = 0;
+        static sqlite3_int64 id_to_start_from = 1;
 
-        if ((lastIdInTable - numberOfRowsPrinted) >= 1)
+        if ((last_id_in_table - number_of_rows_printed) >= 1)
         {
-                relativePosition = lastIdInTable - numberOfRowsPrinted;
+                relative_position = last_id_in_table - number_of_rows_printed;
 
-                if (relativePosition < limit) limit = relativePosition;
+                if (relative_position < limit) limit = relative_position;
 
-                if ((relativePosition - limit) >= 1) idToStartFrom = (relativePosition - limit);
+                if ((relative_position - limit) >= 1) id_to_start_from = (relative_position - limit);
         }
 
-        char *sqlStatement = sqlite3_mprintf("SELECT * FROM logs WHERE ID >= %lli LIMIT %lli;", idToStartFrom, limit);
+        char *sql_statement = sqlite3_mprintf("SELECT * FROM logs WHERE ID >= %lli LIMIT %lli;", id_to_start_from, limit);
 
-        if ((logDatabaseHandler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if ((log_database_handler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
 
-        free(sqlStatement);
+        free(sql_statement);
 
         return 0;
 }
 
 /* Insert the drug, dose, date & time in the db */
 static int
-add_to_logs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime, char* drug, float dose)
+add_to_logs(sqlite3 *db_ptr, int log_database_handler, char* the_date, char* the_time, char* drug, float dose)
 {
-        static char *preStatement = "INSERT INTO logs(theDate, theTime, name, dose) VALUES('%q','%q','%s','%2g')";
+        static char *pre_statement = "INSERT INTO logs(theDate, theTime, name, dose) VALUES('%q','%q','%s','%2g')";
         
-        char *sqlStatement = sqlite3_mprintf(preStatement, theDate, theTime, drug, dose);
+        char *sql_statement = sqlite3_mprintf(pre_statement, the_date, the_time, drug, dose);
 
-        if ((logDatabaseHandler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if ((log_database_handler = sqlite3_exec(DB_EXEC_CALLBACK)) != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
 
-        free(sqlStatement);
+        free(sql_statement);
 
         return 0;
 }
@@ -209,38 +208,38 @@ add_to_logs(sqlite3 *dbPtr, int logDatabaseHandler, char* theDate, char* theTime
 static void
 get_limit_then_print_logs(char *string)
 {
-        static unsigned char a = 0;
-        static unsigned char b = 0;
+        int a = 0;
+        int b = 0;
         
-        static char stringCopy[10];
+        char string_copy[10] = "";
        
-        static size_t stringLength; stringLength = strlen(string);
+        size_t string_length = strlen(string);
  
-        while (a++ < stringLength)
+        while (a++ < string_length)
         {
                 if (string[a] >= '0' && string[a] <= '9')
                 {
-                        stringCopy[b] = string[a];
+                        string_copy[b] = string[a];
                         b++;
                 }
         }
         
-        static unsigned int idLimit; idLimit = parse_string_to_uint(stringCopy);
+        unsigned int id_limit = parse_string_to_uint(string_copy);
         
         puts(BOLD_LINE);
 
         /* Silent error handling. We just want to keep this reasonable */
-        if (idLimit > 50) idLimit = 50;
-        else if (idLimit < 1) idLimit = 1;
+        if (id_limit > 50) id_limit = 50;
+        else if (id_limit < 1) id_limit = 1;
         
-        print_logs_from_ID((sqlite3_int64) idLimit);
+        print_logs_from_ID((sqlite3_int64) id_limit);
 
         puts(BOLD_LINE);
 }
 
 /* Remove last log entry*/
 static int
-rm_last_entry_callback(void *NotUsed, int argc, char **argv, char **azColName)
+rm_last_entry_callback(void *Not_used, int argc, char **argv, char **az_col_name)
 {
         printf("Are you sure you want to remove the last entry of %s at %s (Y/N): ", argv[3], argv[2]);
         return 0;
@@ -249,21 +248,21 @@ rm_last_entry_callback(void *NotUsed, int argc, char **argv, char **azColName)
 static void
 rm_last_entry_from_database(void)
 {
-        #define SELECT_LAST_ENTRY dbPtr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
-        #define DELETE_LAST_ENTRY dbPtr, "DELETE FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
-        #define DB_OBJECTS (void*) data, &zErrMsg
+        #define SELECT_LAST_ENTRY db_ptr, "SELECT * FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
+        #define DELETE_LAST_ENTRY db_ptr, "DELETE FROM logs WHERE ID = (SELECT MAX(ID) FROM logs);"
+        #define DB_OBJECTS (void*) data, &z_err_msg
         
         /* This calls the function just above this one aka `rm_last_entry_callback` */
-        logDatabaseHandler = sqlite3_exec(SELECT_LAST_ENTRY, rm_last_entry_callback, DB_OBJECTS);
-        if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        log_database_handler = sqlite3_exec(SELECT_LAST_ENTRY, rm_last_entry_callback, DB_OBJECTS);
+        if (log_database_handler != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
         
         if (does_user_agree())
         {
                 /* This deletes the last entry */
-                logDatabaseHandler = sqlite3_exec(DELETE_LAST_ENTRY, callback, DB_OBJECTS);
+                log_database_handler = sqlite3_exec(DELETE_LAST_ENTRY, callback, DB_OBJECTS);
                 
                 /* If sql error */
-                if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+                if (log_database_handler != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
                 else puts("Succesfully removed last entry from logs");
 
         }
@@ -279,14 +278,21 @@ rm_last_entry_from_database(void)
 static void
 show_logs(void)
 {
-        printf("\n\n %s\n", tStruct.theTime);
+        printf("\n\n %s\n", t_struct.the_time);
         puts(BOLD_LINE);
 
-        print_logs_from_date(tStruct.theDate);
+        print_logs_from_date(t_struct.the_date);
 
-        isFirstSqliteStatement = false;
+        if (is_first_sqlite_statement) is_first_sqlite_statement = false;
 
         puts(BOLD_LINE);
+}
+
+static inline void
+reset_number_of_rows_printed(void)
+{
+        is_first_sqlite_statement = true;
+        number_of_rows_printed = 0;
 }
 
 /* Clear screen and print everything again. */
@@ -295,6 +301,7 @@ refresh_screen(void)
 {
         CLEAR_SCREEN();
         refresh_time_struct();
+        reset_number_of_rows_printed();
         printf(COLOR_RESET);
         show_logs();
 }
@@ -319,9 +326,9 @@ print_help_menu(void)
 
 /* Make Selection (read user input) */
 static int
-read_user_input(char* lastObj)
+read_user_input(char* last_obj)
 {
-        char c[13];
+        static char c[13];
         char *ptr;
 
         printf("\n> ");
@@ -369,7 +376,7 @@ read_user_input(char* lastObj)
                                 }
                         }
                 }
-                else if (c[0] >= 'a' && c[0] <= (*lastObj - 1)) return((int) (c[0] - 'a'));
+                else if (c[0] >= 'a' && c[0] <= (*last_obj - 1)) return((int) (c[0] - 'a'));
                 else DRUGIO_ERR(DRUGIO_OOR); /* Error: out of range */
                 
                 return -2;
@@ -377,15 +384,15 @@ read_user_input(char* lastObj)
 }
 
 /* Print drugs */
-static DrugAndDoseToPrint 
-drugio_menu(Drug* drugList[])
+static Drug_and_dose_to_print 
+drugio_menu(Drug* drug_list[])
 {
-        Drug *dPtr = NULL;
-        DrugAndDoseToPrint dip; dip.promise = true;
+        Drug *d_ptr = NULL;
+        Drug_and_dose_to_print dip; dip.promise = true;
           
         char ident = 'a';
         
-        for (int i = 0, d = 0; ; d = 0)
+        for (int i = 0, d = 0;;)
         {
                 while (true)
                 {
@@ -394,35 +401,35 @@ drugio_menu(Drug* drugList[])
                               );
 
                         /* Print Drug names */
-                        for (i = 0, ident = 'a'; drugList[i] != NULL; ++i)
+                        for (i = 0, ident = 'a'; drug_list[i] != NULL; ++i)
                         {
-                                printf("[%c] %s\n", ident, drugList[i]->name);
+                                printf("[%c] %s\n", ident, drug_list[i]->name);
                                 
-                                DRUGIO_IDENT_SWITCH(ident)
+                                DRUGIO_IDENT_SWITCH(ident);
                         }
 
                         d = read_user_input(&ident);
 
-                        if (d < 0 || drugList[d] == NULL) break;
+                        if (d < 0 || drug_list[d] == NULL) break;
                                         
-                        dPtr = drugList[d];
-                        dip.drugName = dPtr->name;
+                        d_ptr = drug_list[d];
+                        dip.drug_name = d_ptr->name;
 
                         /* Early out if only one dose for selected Drug */
-                        if (!dPtr->doses[1]) d = 0;
+                        if (!d_ptr->doses[1]) d = 0;
                         else
                         {
-                                printf("\nDoses for %s:\n\n", dPtr->name);
+                                printf("\nDoses for %s:\n\n", d_ptr->name);
                 
                                 /* Print the Drug doses */
-                                for (ident = 'a', i = 0; dPtr->doses[i] != 0 ; ++i)
+                                for (ident = 'a', i = 0; d_ptr->doses[i] != 0 ; ++i)
                                 {
                                         printf("[%c] ", ident);
                                         
-                                        if (!dPtr->isNanoGram) printf("%d mg\n", dPtr->doses[i]);
-                                        else printf("%-2g mg\n", (float) (dPtr->doses[i] / 1000.0f));
+                                        if (!d_ptr->is_nano_gram) printf("%d mg\n", d_ptr->doses[i]);
+                                        else printf("%-2g mg\n", (float) (d_ptr->doses[i] / 1000.0f));
                                                 
-                                        DRUGIO_IDENT_SWITCH(ident)
+                                        DRUGIO_IDENT_SWITCH(ident);
                                 }
                                 
                                 d = read_user_input(&ident);
@@ -436,9 +443,9 @@ drugio_menu(Drug* drugList[])
                         case -1: dip.promise = false; return dip;
                         default:
                         {
-                                if (dPtr == NULL) continue;
-                                else if (!dPtr->isNanoGram) dip.drugDose = (float) dPtr->doses[d] / 1.0f;
-                                else dip.drugDose = (float) dPtr->doses[d] / 1000.0f;
+                                if (d_ptr == NULL) continue;
+                                else if (!d_ptr->is_nano_gram) dip.drug_dose = (float) d_ptr->doses[d] / 1.0f;
+                                else dip.drug_dose = (float) d_ptr->doses[d] / 1000.0f;
                                 return dip;
                         }
                 }
@@ -455,21 +462,21 @@ does_user_want_to_run_again(void)
 
 /* Print the end result */
 extern void
-do_fprintd(const char* dbPath, Drug* drugList[])
+do_fprintd(const char* db_path, Drug* drug_list[])
 {
-        logDatabaseHandler = sqlite3_open(dbPath, &dbPtr);
+        log_database_handler = sqlite3_open(db_path, &db_ptr);
 
-        if (logDatabaseHandler != SQLITE_OK) SQLITE_NOT_OK(dbPtr);
+        if (log_database_handler != SQLITE_OK) SQLITE_NOT_OK(db_ptr);
         else do
         {
                 refresh_screen();
 
-                DrugAndDoseToPrint dip = drugio_menu(drugList);
+                Drug_and_dose_to_print dip = drugio_menu(drug_list);
 
                 if (!dip.promise) break;
-                else add_to_logs(dbPtr, logDatabaseHandler, tStruct.theDate, tStruct.theTime, dip.drugName, dip.drugDose);
+                else add_to_logs(db_ptr, log_database_handler, t_struct.the_date, t_struct.the_time, dip.drug_name, dip.drug_dose);
 
         } while (does_user_want_to_run_again());
 
-        sqlite3_close(dbPtr);
+        sqlite3_close(db_ptr);
 }

@@ -55,59 +55,66 @@
 #define DRUGIO_ERR(x) fprintf(stderr, x)
 #define DRUGIO_OOR "ERROR: The character you entered is not part of the selection\n"
 #define DRUGIO_RET_NULL(x) fprintf(stderr, "ERROR: %s returned NULL in file '%s' at line: %i.", x, __FILE__, __LINE__)
-#define SQLITE_NOT_OK(dbPtr) fprintf(stderr, "ERROR: SQLITE_ERR_MSG: %s\n", sqlite3_errmsg(dbPtr))
+#define SQLITE_NOT_OK(db_ptr) fprintf(stderr, "ERROR: SQLITE_ERR_MSG: %s\n", sqlite3_errmsg(db_ptr))
 
-#define DB_EXEC_CALLBACK dbPtr, sqlStatement, callback, (void*) data, &zErrMsg
+#define DB_EXEC_CALLBACK db_ptr, sql_statement, callback, (void*) data, &z_err_msg
 
 #define mg(...) (int[]) {__VA_ARGS__, 0}, false
 #define ng(...) (int[]) {__VA_ARGS__, 0}, true
 
-#define drugList(...)									\
+#define drug_list(...)									\
 											\
-	Drug* drugList[] = {__VA_ARGS__, NULL};                           		\
-        do_fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drugList);      \
-        free_Drug_array(drugList)                                                       \
+	Drug* drug_list[] = {__VA_ARGS__, NULL};					\
+	do_fprintd(DRUGIO_FOLDER_LOCATION DRUGIO_DB_FILE_RELATIVE_PATH, drug_list);	\
+	free_Drug_array(drug_list)							\
 
-#define DRUGIO_IDENT_SWITCH(ident)			\
-							\
-	switch (ident)					\
-	{						\
-		case 'z': ident = 'A'; break;		\
-		case 'Z': ident = '0'; break;		\
-		default: ident++; break;		\
-	}						\
+/*
+ * The following `do {} while (false)` may seem odd but it generates the same code.
+ * The difference is that you can use `;` at the end of the macro call. 
+ */
+
+#define DRUGIO_IDENT_SWITCH(ident)				\
+	do							\
+	{							\
+		switch (ident)					\
+		{						\
+			case 'z': ident = 'A'; break;		\
+			case 'Z': ident = '0'; break;		\
+			default: ident++; break;		\
+		}						\
+	} while (false)						\
 
 /* This is most likely right. May not be. */
 #if defined(_WIN32) || defined(_WIN64)
 	#define CLEAR_SCREEN() system("cls")
-        #define COLOR_RESET "\x1b[0;37m"
+	#define COLOR_RESET "\x1b[0;37m"
 #else
 	#define CLEAR_SCREEN() printf("\x1B[2J")
-        #define COLOR_RESET "\x1b[0;97m"
+	#define COLOR_RESET "\x1b[0;97m"
 #endif
 
 /* Type Drug of type struct */
 typedef struct _Drug
 {       char* name;
-        int* doses;
-        bool isNanoGram;
+	int* doses;
+	bool is_nano_gram;
 } Drug;
 
-/* Type DrugAndDoseToPrint of type struct */
-typedef struct _DrugAndDoseToPrint
-{       float drugDose;
-        char* drugName;
-        bool promise;
-} DrugAndDoseToPrint;
+/* Type Drug_and_dose_to_print of type struct */
+typedef struct _Drug_and_dose_to_print
+{       float drug_dose;
+	char* drug_name;
+	bool promise;
+} Drug_and_dose_to_print;
 
 /* Date and time strings */
-typedef struct _ParsedDateAndTime
-{       char theDate[11];
-        char theTime[6];
-} ParsedDateAndTime;
+typedef struct _Parsed_date_and_time
+{       char the_date[11];
+	char the_time[6];
+} Parsed_date_and_time;
 
 /* Functions prototypes */
-extern Drug* newDrug(char*, int*, bool);
+extern Drug* new_drug(char*, int*, bool);
 extern void do_fprintd(const char*, Drug* []);
 extern void free_Drug_array(Drug* []);
 

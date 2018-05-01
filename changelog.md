@@ -102,3 +102,10 @@ That is planned for 1.1.X with X > 1 and should be final in 1.3
 * Code optimisation. 
 * Escape sequence "colors" (black and white)
 
+# 1.1.3~a
+
+* Changed the naming scheme to get rid of camel case once and for all. 
+
+# 1.1.4
+
+* Fixed logs function not working properly. 
